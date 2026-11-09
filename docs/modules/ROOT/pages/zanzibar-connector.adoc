@@ -1,0 +1,205 @@
+= Zanzibar connector
+include::./includes/attributes.adoc[]
+
+`quarkus-topaz-zanzibar` connects https://github.com/quarkiverse/quarkus-zanzibar[quarkus-zanzibar] to Topaz.
+quarkus-zanzibar offers annotations such as `@FGARelation` and `@FGAPathObject`. They guard REST endpoints with
+relationship checks. quarkus-zanzibar also defines a `RelationshipManager` interface that stores and checks the
+relationships. This artifact supplies a `RelationshipManager` backed by the Topaz directory, so Topaz answers the
+annotations. It is a candidate for upstreaming as a quarkiverse connector.
+
+[IMPORTANT]
+====
+The artifact enables the quarkus-zanzibar filter, and `quarkus.zanzibar.filter.deny-unannotated-resource-methods`
+defaults to `true`. Every REST endpoint without a quarkus-zanzibar annotation then answers 403. To change that,
+annotate the endpoint, mark it `@FGAIgnore`, or set the property to `false`.
+====
+
+== Installation
+
+The artifact brings quarkus-zanzibar and `quarkus-topaz` with it. `quarkus-topaz` holds the client and the Dev
+Service.
+
+[source,xml,subs=attributes+]
+----
+<dependency>
+    <groupId>io.quarkiverse.topaz</groupId>
+    <artifactId>quarkus-topaz-zanzibar</artifactId>
+    <version>{project-version}</version>
+</dependency>
+----
+
+The quarkus-zanzibar filter needs a REST extension, such as `quarkus-rest` or RESTEasy.
+`quarkus.zanzibar.filter.enabled` defaults to `true`. While it is `true`, the build fails without a REST extension.
+
+== The relationship manager
+
+The `RelationshipManager` bean calls the Topaz directory through the `DirectoryClient`:
+
+[cols="1,2,3"]
+|===
+|Method |Directory call |Behaviour
+
+|`check` |Reader `Check` |Answers whether the relationship holds. These all answer `false`: a relation or permission
+that does not exist, an unknown object type and a `NOT_FOUND` from the directory. Any other error propagates.
+|`add` |Writer `SetRelation`, once per element, in order |Idempotent. Setting an existing relation succeeds. Not
+atomic. The first error stops the list and propagates, and the elements before it stay set.
+|`remove` |Writer `DeleteRelation`, once per element, in order |Ignores a relation that does not exist. Not atomic,
+like `add`. The first other error stops the list and propagates, and the elements before it stay removed.
+|===
+
+The connector never sets the subject relation. Errors propagate as `io.grpc.StatusRuntimeException` and never turn
+into `true`.
+
+[#user-identity]
+== User identity
+
+quarkus-zanzibar turns the authenticated caller into the subject of the check. It resolves the subject type from three
+sources in this fixed order. The first source that gives a type wins:
+
+. The principal name, when `quarkus.zanzibar.extract-user-type-from-name` is `true`, which is the default. The
+separator `quarkus.zanzibar.user-type-separator` defaults to `:`. When it splits the name into exactly two parts,
+quarkus-zanzibar reads the name as `type:id`. The first part is the subject type and the second the subject id.
+
+. The role of the caller, when `quarkus.zanzibar.extract-user-type-from-roles` is `true` and the identity has exactly
+one role. The property defaults to `true`.
+
+. `@FGAUserType` on the resource method or class.
+
+Unless the name was split, the subject id is the whole principal name. When no source gives a type, quarkus-zanzibar
+treats the caller as having no user. It then checks the `quarkus.zanzibar.filter.unauthenticated-user` when that
+property is set. Otherwise it denies with 403.
+
+Topaz needs a directory object of the resolved type and id, so the caller must exist in the directory. Otherwise
+checks answer `false`.
+
+[WARNING]
+====
+`@FGAUserType` is the last source, so on its own it does not stop the other two:
+
+* quarkus-zanzibar checks a caller with a single role with the role name as the subject type, such as `admin`. For
+Topaz, the subject type is a directory object type such as `user`, not a role. Every check of that caller answers 403.
+* A principal name with one `:` chooses its own type and id. quarkus-zanzibar checks an identity-provider subject such
+as `google-oauth2:123` as type `google-oauth2` with id `123`. Where users pick their own names, a user who registers
+`user:rick@the-citadel.com` is checked as Rick.
+
+Turn both extractions off and put `@FGAUserType("user")` on the resources. Keep them on only if your principal names
+are `type:id` by design:
+
+[source,properties]
+----
+quarkus.zanzibar.extract-user-type-from-roles=false
+quarkus.zanzibar.extract-user-type-from-name=false
+----
+
+If you turn role extraction off without `@FGAUserType`, the type stays unresolved. quarkus-zanzibar then denies the
+caller with 403. When `quarkus.zanzibar.filter.unauthenticated-user` is set, it checks the caller as that user
+instead.
+====
+
+`quarkus.topaz.zanzibar.default-user-type` defaults to `user`. It fills the subject type only when quarkus-zanzibar
+hands the connector a blank one. The filter does that on one path, the `unauthenticated-user` fallback on an endpoint
+without `@FGAUserType`. The property also applies to a `Relationship` with a blank user type that your code passes to
+the `RelationshipManager`. It does not give an authenticated caller a type.
+
+== Relations and permissions
+
+`@FGARelation` can name a relation or a permission such as `can_delete`, because Topaz `Check` evaluates both.
+
+== Walkthrough
+
+The todo application of the `integration-tests` module in this repository uses the manifest in
+`integration-tests/src/main/resources/topaz/manifest.yaml`:
+
+[source,yaml]
+----
+types:
+  user: {}
+  todo:
+    relations:
+      owner: user
+    permissions:
+      can_delete: owner
+----
+
+`FgaTodoResource` guards its endpoints with the annotations. The class sets the subject type, and the owner may read:
+
+[source,java]
+----
+@Path("/fga/todos")
+@ApplicationScoped
+@FGAUserType("user")
+public class FgaTodoResource {
+
+    @GET
+    @Path("/{id}")
+    @FGAPathObject(param = "id", type = "todo")
+    @FGARelation("owner")
+    public Map<String, String> get(@PathParam("id") String id) { ... }
+----
+
+`@FGAPathObject` takes the object id from the path parameter `id`. The object type is `todo`. The check is
+`todo:<id>#owner@user:<principal>`. The delete endpoint names the permission:
+
+[source,java]
+----
+@DELETE
+@Path("/{id}")
+@FGAPathObject(param = "id", type = "todo")
+@FGARelation("can_delete")
+public Response delete(@PathParam("id") String id) { ... }
+----
+
+Sharing is a write through the `RelationshipManager`. Only an owner may share, so the endpoint requires `owner` like
+`get`. The method then sets or removes the relation:
+
+[source,java]
+----
+@PUT
+@Path("/{id}/owners/{user}")
+@FGAPathObject(param = "id", type = "todo")
+@FGARelation("owner")
+public Uni<Response> share(@PathParam("id") String id, @PathParam("user") String user) {
+    return manager.add(List.of(Relationship.of("todo", id, "owner", "user", user)))
+            .map(v -> Response.noContent().build());
+}
+----
+
+`unshare` is the same with `manager.remove`.
+
+[WARNING]
+====
+`@FGARelation(FGARelation.ANY)` does not mean "any relation". It skips the check completely. The filter lets the
+request through without requiring a user and without looking the object up in Topaz. Anonymous callers pass as well.
+Use it only on endpoints that are safe for everyone, never on one that writes relationships.
+====
+
+The `topaz` route policy secures the other endpoints of the application. Its `application.properties` therefore sets
+`quarkus.zanzibar.filter.deny-unannotated-resource-methods=false`. Its embedded users have no roles and no `:` in
+their names. So the application leaves both user-type extractions at their defaults.
+
+== Errors
+
+* An anonymous caller and a caller that is unknown to the directory get 403 on a checked endpoint. quarkus-zanzibar
+denies. It does not challenge with 401.
+* When Topaz refuses the connection, the check fails fast with `UNAVAILABLE` and the filter answers 500.
+* When Topaz accepts the connection and never answers, the shorter of two limits ends the wait. The filter then
+answers 500. The limits are these:
+** The client deadline `quarkus.topaz.deadline`, unset by default. It fails the call with `DEADLINE_EXCEEDED`.
+** `quarkus.zanzibar.filter.timeout`, 5s by default. It fails the call with a `TimeoutException`.
+
+== Configuration
+
+The connector has one property. All other settings, `quarkus.zanzibar.*`, belong to quarkus-zanzibar. See its
+documentation.
+
+[cols="2,3"]
+|===
+|Property |Meaning
+
+|`quarkus.topaz.zanzibar.default-user-type` |The subject type for a blank user type from quarkus-zanzibar. This
+happens on the `quarkus.zanzibar.filter.unauthenticated-user` path for an endpoint without `@FGAUserType`. It also
+happens for a `Relationship` with a blank user type that your code passes to the `RelationshipManager`. It never
+gives an authenticated caller a type. See <<user-identity>>. Default `user`.
+|===
+
+The full reference is in xref:config-reference.adoc[Configuration reference].

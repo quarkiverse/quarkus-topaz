@@ -1,0 +1,179 @@
+[.configuration-legend]
+icon:lock[title=Fixed at build time] Configuration property fixed at build time - All other configuration properties are overridable at runtime
+[.configuration-reference.searchable, cols="80,.^10,.^10"]
+|===
+
+h|[.header-title]##Configuration property##
+h|Type
+h|Default
+
+a|icon:lock[title=Fixed at build time] [[quarkus-topaz-security_quarkus-topaz-enforcement-read-body]] [.property-path]##link:#quarkus-topaz-security_quarkus-topaz-enforcement-read-body[`+++quarkus.topaz.enforcement.read-body+++`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.topaz.enforcement.read-body+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+Get whether the request body is read and made available to the policy.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_TOPAZ_ENFORCEMENT_READ_BODY+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_TOPAZ_ENFORCEMENT_READ_BODY+++`
+endif::add-copy-button-to-env-var[]
+--
+|boolean
+|`+++false+++`
+
+a|icon:lock[title=Fixed at build time] [[quarkus-topaz-security_quarkus-topaz-enforcement-permissions-enabled]] [.property-path]##link:#quarkus-topaz-security_quarkus-topaz-enforcement-permissions-enabled[`+++quarkus.topaz.enforcement.permissions.enabled+++`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.topaz.enforcement.permissions.enabled+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+Get whether permission-based checks are enabled.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_TOPAZ_ENFORCEMENT_PERMISSIONS_ENABLED+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_TOPAZ_ENFORCEMENT_PERMISSIONS_ENABLED+++`
+endif::add-copy-button-to-env-var[]
+--
+|boolean
+|`+++false+++`
+
+a| [[quarkus-topaz-security_quarkus-topaz-enforcement-policy-root]] [.property-path]##link:#quarkus-topaz-security_quarkus-topaz-enforcement-policy-root[`+++quarkus.topaz.enforcement.policy-root+++`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.topaz.enforcement.policy-root+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+Get the policy root, which is the Rego package prefix that decisions are evaluated under.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_TOPAZ_ENFORCEMENT_POLICY_ROOT+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_TOPAZ_ENFORCEMENT_POLICY_ROOT+++`
+endif::add-copy-button-to-env-var[]
+--
+|string
+|
+
+a| [[quarkus-topaz-security_quarkus-topaz-enforcement-decision]] [.property-path]##link:#quarkus-topaz-security_quarkus-topaz-enforcement-decision[`+++quarkus.topaz.enforcement.decision+++`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.topaz.enforcement.decision+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+Get the name of the decision that must be true for a request to be allowed.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_TOPAZ_ENFORCEMENT_DECISION+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_TOPAZ_ENFORCEMENT_DECISION+++`
+endif::add-copy-button-to-env-var[]
+--
+|string
+|`+++allowed+++`
+
+a| [[quarkus-topaz-security_quarkus-topaz-enforcement-additional-decisions]] [.property-path]##link:#quarkus-topaz-security_quarkus-topaz-enforcement-additional-decisions[`+++quarkus.topaz.enforcement.additional-decisions+++`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.topaz.enforcement.additional-decisions+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+Get the further decisions to request from the authorizer alongside the main one.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_TOPAZ_ENFORCEMENT_ADDITIONAL_DECISIONS+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_TOPAZ_ENFORCEMENT_ADDITIONAL_DECISIONS+++`
+endif::add-copy-button-to-env-var[]
+--
+|list of string
+|
+
+a| [[quarkus-topaz-security_quarkus-topaz-enforcement-anonymous]] [.property-path]##link:#quarkus-topaz-security_quarkus-topaz-enforcement-anonymous[`+++quarkus.topaz.enforcement.anonymous+++`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.topaz.enforcement.anonymous+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+Get what to do with requests that carry no identity.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_TOPAZ_ENFORCEMENT_ANONYMOUS+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_TOPAZ_ENFORCEMENT_ANONYMOUS+++`
+endif::add-copy-button-to-env-var[]
+--
+a|`deny`, `evaluate`
+|`+++deny+++`
+
+a| [[quarkus-topaz-security_quarkus-topaz-enforcement-timeout]] [.property-path]##link:#quarkus-topaz-security_quarkus-topaz-enforcement-timeout[`+++quarkus.topaz.enforcement.timeout+++`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.topaz.enforcement.timeout+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+Get the deadline for a whole evaluation.
+
+The deadline covers the mappers (identity, policy path and resource context) and the Topaz call together. It does not apply to each call separately. An evaluation that exceeds it is denied.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_TOPAZ_ENFORCEMENT_TIMEOUT+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_TOPAZ_ENFORCEMENT_TIMEOUT+++`
+endif::add-copy-button-to-env-var[]
+--
+|link:https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/Duration.html[Duration] link:#duration-note-anchor-quarkus-topaz-security_quarkus-topaz[icon:question-circle[title=More information about the Duration format]]
+|`+++5S+++`
+
+|===
+
+ifndef::no-duration-note[]
+[NOTE]
+[id=duration-note-anchor-quarkus-topaz-security_quarkus-topaz]
+.About the Duration format
+====
+To write duration values, use the standard `java.time.Duration` format.
+See the link:https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/Duration.html#parse(java.lang.CharSequence)[Duration#parse() Java API documentation] for more information.
+
+You can also use a simplified format, starting with a number:
+
+* If the value is only a number, it represents time in seconds.
+* If the value is a number followed by `ms`, it represents time in milliseconds.
+
+In other cases, the simplified format is translated to the `java.time.Duration` format for parsing:
+
+* If the value is a number followed by `h`, `m`, or `s`, it is prefixed with `PT`.
+* If the value is a number followed by `d`, it is prefixed with `P`.
+====
+endif::no-duration-note[]

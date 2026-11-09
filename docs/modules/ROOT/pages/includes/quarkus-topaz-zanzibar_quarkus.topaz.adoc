@@ -1,0 +1,34 @@
+[.configuration-legend]
+icon:lock[title=Fixed at build time] Configuration property fixed at build time - All other configuration properties are overridable at runtime
+[.configuration-reference.searchable, cols="80,.^10,.^10"]
+|===
+
+h|[.header-title]##Configuration property##
+h|Type
+h|Default
+
+a| [[quarkus-topaz-zanzibar_quarkus-topaz-zanzibar-default-user-type]] [.property-path]##link:#quarkus-topaz-zanzibar_quarkus-topaz-zanzibar-default-user-type[`+++quarkus.topaz.zanzibar.default-user-type+++`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.topaz.zanzibar.default-user-type+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+The subject type for a relationship whose user type is blank.
+
+quarkus-zanzibar hands over such a relationship on the `quarkus.zanzibar.filter.unauthenticated-user` path, for an endpoint without `@FGAUserType`. The value also applies to a relationship with a blank user type passed to the `RelationshipManager` directly. It does not give an authenticated caller a type. quarkus-zanzibar takes that type from the principal name (`type:id`), then a single role, then `@FGAUserType`. It treats the caller as unauthenticated when none of them gives one.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_TOPAZ_ZANZIBAR_DEFAULT_USER_TYPE+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_TOPAZ_ZANZIBAR_DEFAULT_USER_TYPE+++`
+endif::add-copy-button-to-env-var[]
+--
+|string
+|`+++user+++`
+
+|===
+

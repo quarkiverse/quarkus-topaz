@@ -1,0 +1,128 @@
+package io.quarkiverse.topaz.security.deployment;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import io.quarkus.security.test.utils.TestIdentityController;
+import io.quarkus.security.test.utils.TestIdentityProvider;
+import io.quarkus.test.QuarkusUnitTest;
+
+// No HTTP policy: only the @TopazAuthorize interceptor enforces.
+public class TopazAuthorizeTest {
+
+    @RegisterExtension
+    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+            .withApplicationRoot(jar -> jar
+                    .addClasses(TodoTestResource.class, ServiceResource.class, SecuredService.class,
+                            ClassBoundResource.class, AuthorizeBoundService.class, CheckBoundService.class,
+                            TestIdentities.class, TestIdentityProvider.class, TestIdentityController.class)
+                    .addAsResource("topaz", "topaz"))
+            .overrideConfigKey("quarkus.http.auth.basic", "true")
+            .overrideConfigKey("quarkus.topaz.devservices.policy.directory", "classpath:topaz/policies")
+            .overrideConfigKey("quarkus.topaz.devservices.manifest-location", "classpath:topaz/manifest.yaml")
+            .overrideConfigKey("quarkus.topaz.devservices.data-location", "classpath:topaz/data")
+            .overrideConfigKey("quarkus.topaz.enforcement.policy-root", "todoApp");
+
+    @BeforeAll
+    static void identities() {
+        TestIdentities.register();
+    }
+
+    @Test
+    void reactiveOwnerPermitted() {
+        given().auth().preemptive().basic("rick@the-citadel.com", "rick")
+                .delete("/service/reactive/todo-1").then().statusCode(200).body(equalTo("deleted todo-1"));
+    }
+
+    @Test
+    void reactiveNonOwnerForbidden() {
+        given().auth().preemptive().basic("morty@the-citadel.com", "morty")
+                .delete("/service/reactive/todo-1").then().statusCode(403);
+    }
+
+    @Test
+    void blockingOwnerPermitted() {
+        given().auth().preemptive().basic("rick@the-citadel.com", "rick")
+                .delete("/service/blocking/todo-1").then().statusCode(200).body(equalTo("deleted todo-1"));
+    }
+
+    @Test
+    void blockingNonOwnerForbidden() {
+        given().auth().preemptive().basic("morty@the-citadel.com", "morty")
+                .delete("/service/blocking/todo-1").then().statusCode(403);
+    }
+
+    @Test
+    void anonymousUnauthorized() {
+        given().get("/service/list").then().statusCode(401);
+    }
+
+    @Test
+    void unknownUserForbidden() {
+        given().auth().preemptive().basic("summer@the-citadel.com", "summer")
+                .get("/service/list").then().statusCode(403);
+    }
+
+    @Test
+    void knownUserListPermitted() {
+        given().auth().preemptive().basic("rick@the-citadel.com", "rick")
+                .get("/service/list").then().statusCode(200).body(equalTo("ok"));
+    }
+
+    @Test
+    void pojoResourceOwnerPermitted() {
+        given().auth().preemptive().basic("rick@the-citadel.com", "rick")
+                .contentType("application/json").body("{\"id\":\"todo-1\",\"note\":\"x\"}")
+                .post("/service/ref").then().statusCode(200).body(equalTo("deleted todo-1"));
+    }
+
+    @Test
+    void pojoResourceNonOwnerForbidden() {
+        given().auth().preemptive().basic("morty@the-citadel.com", "morty")
+                .contentType("application/json").body("{\"id\":\"todo-1\",\"note\":\"x\"}")
+                .post("/service/ref").then().statusCode(403);
+    }
+
+    @Test
+    void derivedPathFromRequest() {
+        // derived.rego permits only morty; todo.rego (todoApp.GET.todos) would permit rick, so a dropped segment fails
+        given().auth().preemptive().basic("morty@the-citadel.com", "morty")
+                .get("/todos/derived").then().statusCode(200).body(equalTo("derived"));
+        given().auth().preemptive().basic("rick@the-citadel.com", "rick")
+                .get("/todos/derived").then().statusCode(403);
+    }
+
+    @Test
+    void multiReturningMethodIsChecked() {
+        given().auth().preemptive().basic("rick@the-citadel.com", "rick")
+                .get("/service/stream").then().statusCode(200).body(containsString("todo-1"))
+                .body(containsString("todo-2"));
+        given().get("/service/stream-count").then().statusCode(200).body(equalTo("1"));
+        given().auth().preemptive().basic("summer@the-citadel.com", "summer")
+                .get("/service/stream").then().statusCode(403);
+        // the denied call never entered the method
+        given().get("/service/stream-count").then().statusCode(200).body(equalTo("1"));
+    }
+
+    @Test
+    void classLevelBindingApplies() {
+        given().auth().preemptive().basic("rick@the-citadel.com", "rick")
+                .delete("/class-bound/authorize/todo-1").then().statusCode(200).body(equalTo("deleted todo-1"));
+        given().auth().preemptive().basic("morty@the-citadel.com", "morty")
+                .delete("/class-bound/authorize/todo-1").then().statusCode(403);
+    }
+
+    @Test
+    void decisionOverride() {
+        // visibleonly: visible=true and allowed=false for rick
+        given().auth().preemptive().basic("rick@the-citadel.com", "rick")
+                .get("/service/visible").then().statusCode(200).body(equalTo("visible"));
+        given().auth().preemptive().basic("rick@the-citadel.com", "rick")
+                .get("/service/visible-as-allowed").then().statusCode(403);
+    }
+}

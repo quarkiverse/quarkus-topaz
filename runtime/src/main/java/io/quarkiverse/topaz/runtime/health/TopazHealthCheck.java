@@ -1,0 +1,86 @@
+package io.quarkiverse.topaz.runtime.health;
+
+import java.time.Duration;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
+import org.eclipse.microprofile.health.HealthCheckResponse;
+import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
+import org.eclipse.microprofile.health.Readiness;
+
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import io.quarkiverse.topaz.TopazClient;
+import io.quarkiverse.topaz.runtime.ResolvedServiceSettings;
+import io.quarkiverse.topaz.runtime.TopazConfig;
+import io.smallrye.health.api.AsyncHealthCheck;
+import io.smallrye.mutiny.Uni;
+
+/**
+ * Readiness check of Topaz.
+ * It is ready when the authorizer answers {@code info} and the directory answers {@code getManifest}.
+ * A directory without a manifest answers NOT_FOUND and still counts as reachable.
+ */
+@Readiness
+@ApplicationScoped
+public class TopazHealthCheck implements AsyncHealthCheck {
+
+    /** Create the health check. The container injects its fields. */
+    public TopazHealthCheck() {
+    }
+
+    /**
+     * The time Topaz has to answer a health probe before the probe fails.
+     */
+    public static final Duration HEALTH_TIMEOUT = Duration.ofSeconds(10);
+
+    /** The Topaz client that probes the services. */
+    @Inject
+    TopazClient client;
+
+    /** The configuration that names the services. */
+    @Inject
+    TopazConfig config;
+
+    /**
+     * Probe the authorizer and the directory.
+     * The response is down if Topaz does not answer within {@link #HEALTH_TIMEOUT} or fails.
+     *
+     * @return the readiness response
+     */
+    @Override
+    public Uni<HealthCheckResponse> call() {
+        try {
+            String authorizer = endpoint(ResolvedServiceSettings.resolve(config, config.authorizer(), 8282));
+            String directory = endpoint(ResolvedServiceSettings.resolve(config, config.directory(), 9292));
+            Uni<?> info = client.authorizer().info();
+            Uni<?> manifest = client.directory().getManifest()
+                    .onFailure(TopazHealthCheck::isNotFound).recoverWithItem("");
+            return Uni.combine().all().unis(info, manifest).discardItems()
+                    .ifNoItem().after(HEALTH_TIMEOUT).fail()
+                    .map(ignored -> HealthCheckResponse.named("Topaz").up()
+                            .withData("authorizer", authorizer).withData("directory", directory).build())
+                    .onFailure().recoverWithItem(t -> down(t, authorizer, directory));
+        } catch (RuntimeException e) {
+            return Uni.createFrom().item(down(e, null, null));
+        }
+    }
+
+    private static String endpoint(ResolvedServiceSettings settings) {
+        return settings.host() + ":" + settings.port();
+    }
+
+    private static boolean isNotFound(Throwable t) {
+        return t instanceof StatusRuntimeException e && e.getStatus().getCode() == Status.Code.NOT_FOUND;
+    }
+
+    private static HealthCheckResponse down(Throwable t, String authorizer, String directory) {
+        String message = t.getMessage() != null ? t.getMessage() : t.getClass().getName();
+        HealthCheckResponseBuilder builder = HealthCheckResponse.named("Topaz").down();
+        if (authorizer != null) {
+            builder.withData("authorizer", authorizer).withData("directory", directory);
+        }
+        return builder.withData("error", message).build();
+    }
+}

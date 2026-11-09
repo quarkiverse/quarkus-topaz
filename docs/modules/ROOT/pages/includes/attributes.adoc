@@ -1,0 +1,5 @@
+:project-version: 0
+:quarkus-version: 3.40.1
+:topaz-image: ghcr.io/aserto-dev/topaz:0.33.22
+
+:examples-dir: ./../examples/

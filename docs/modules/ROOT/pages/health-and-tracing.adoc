@@ -1,0 +1,23 @@
+= Health and tracing
+
+== Readiness check
+
+When the application includes `quarkus-smallrye-health`, the extension publishes a readiness check named `Topaz`.
+The check is up when the authorizer answers `Info` and the directory answers `GetManifest`. A directory without a
+manifest answers `NOT_FOUND`, which still counts as reachable. Any other error marks the check down and reports the
+error in the check data.
+
+Turn the check off with `quarkus.topaz.health.enabled=false`. Quarkus fixes this key at build time.
+
+[source,shell]
+----
+curl -s localhost:8080/q/health/ready
+----
+
+== Tracing and metrics
+
+The Topaz channels apply the global gRPC client interceptors, the ones annotated with
+`@io.quarkus.grpc.GlobalInterceptor`. `quarkus-opentelemetry` traces gRPC client calls through such an interceptor,
+and `quarkus-micrometer` measures them the same way. Either extension therefore instruments the calls to both the
+authorizer and the directory. You configure nothing specific to Topaz. Your own `@GlobalInterceptor` client
+interceptors apply to Topaz calls as well.

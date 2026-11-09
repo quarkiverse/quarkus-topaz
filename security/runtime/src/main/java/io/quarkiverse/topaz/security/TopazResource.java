@@ -1,0 +1,26 @@
+package io.quarkiverse.topaz.security;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/**
+ * Adds a method argument to the resource context of a {@link TopazAuthorize} check, under the key {@link #value()}.
+ * <p>
+ * The argument is converted with Jackson. Strings, numbers, booleans, maps and lists pass through. Other objects become
+ * maps of their properties. The value replaces a key of the same name produced by the {@link ResourceContextMapper}.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.PARAMETER)
+public @interface TopazResource {
+
+    /**
+     * Get the key in the resource context.
+     * <p>
+     * Policies read the value as {@code input.resource.<key>}.
+     *
+     * @return the key
+     */
+    String value();
+}

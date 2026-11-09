@@ -1,0 +1,141 @@
+= Dev Services
+include::./includes/attributes.adoc[]
+
+In dev and test mode, the extension starts a Topaz container and points the client at it. The Dev Service needs a
+container runtime, such as Docker or Podman.
+
+== When it starts
+
+The Dev Service runs unless one of these holds:
+
+* `quarkus.topaz.devservices.enabled=false`.
+* `quarkus.topaz.authorizer.host` or `quarkus.topaz.directory.host` is set. This means that you point at your own
+Topaz.
+* No container runtime is available. The extension then logs a warning.
+
+Once the container is up, the application receives these properties:
+
+* `quarkus.topaz.authorizer.host` and `.port`.
+* `quarkus.topaz.directory.host` and `.port`.
+* `quarkus.topaz.plain-text=true`.
+* `quarkus.topaz.api-key`, when `quarkus.topaz.devservices.api-key` is set.
+* `quarkus.topaz.console-url`, when the console is enabled.
+
+The container listens in plaintext, so the application needs no trust store.
+
+== Settings
+
+Quarkus fixes all these keys at build time. The xref:config-reference.adoc[configuration reference] lists their types
+and defaults.
+
+[cols="2,3"]
+|===
+|Key |Effect
+
+|`quarkus.topaz.devservices.enabled` |Turns the Dev Service off when `false`.
+|`quarkus.topaz.devservices.image-name` |Topaz image. Defaults to `{topaz-image}`, the version this extension is
+tested with.
+|`quarkus.topaz.devservices.policy.directory` |Directory of Rego files loaded as a local bundle.
+|`quarkus.topaz.devservices.policy.image` |OCI policy image pulled from `ghcr.io`, such as
+`ghcr.io/aserto-policies/policy-todo:latest`.
+|`quarkus.topaz.devservices.manifest-location` |Directory manifest YAML loaded after start.
+|`quarkus.topaz.devservices.data-location` |Directory with `objects.json` and/or `relations.json` imported after
+the manifest.
+|`quarkus.topaz.devservices.api-key` |Makes the container require this API key and configures the client to send
+it. `Info` and gRPC reflection work without the key.
+|`quarkus.topaz.devservices.container-env."env-name"` |Extra environment variables for the container.
+|`quarkus.topaz.devservices.console-enabled` |Exposes the Topaz console and sets `quarkus.topaz.console-url`.
+|`quarkus.topaz.devservices.shared` |Shares the container between applications in dev mode.
+|`quarkus.topaz.devservices.service-name` |Value of the `quarkus-dev-service-topaz` label used to find a shared
+container.
+|===
+
+Locations accept `classpath:`, `filesystem:` or a plain path. The extension copies a `classpath:` location under the
+build output directory, also from a jar. A location that does not exist fails the build.
+
+== Policies: directory or image
+
+Set at most one of the two policy keys. Setting both fails the build.
+
+Use `policy.directory` for policies that live in your repository. The extension copies the Rego files into the
+container when it starts. Topaz loads them as a local bundle and does not verify a signature.
+
+Use `policy.image` for a policy that is already published as an OCI image, the way Topaz templates ship theirs.
+Topaz pulls it from `ghcr.io` at start.
+
+With neither key, Topaz starts without a policy. Authorizer `Is` calls then fail until you load one.
+
+== Manifest and data formats
+
+The manifest is a Topaz directory manifest with model version 3:
+
+[source,yaml]
+----
+model:
+  version: 3
+types:
+  user: {}
+  identity:
+    relations:
+      identifier: user
+  todo:
+    relations:
+      owner: user
+    permissions:
+      can_delete: owner
+----
+
+The data directory holds Topaz's export format: `objects.json` as `{"objects": [...]}` and `relations.json` as
+`{"relations": [...]}`. Entries are directory `Object` and `Relation` messages in their JSON form:
+
+[source,json]
+----
+{"objects": [
+  {"type": "user", "id": "rick@the-citadel.com", "display_name": "Rick Sanchez"},
+  {"type": "identity", "id": "rick@the-citadel.com"},
+  {"type": "todo", "id": "todo-1"}
+]}
+----
+
+[source,json]
+----
+{"relations": [
+  {"object_type": "identity", "object_id": "rick@the-citadel.com", "relation": "identifier",
+   "subject_type": "user", "subject_id": "rick@the-citadel.com"},
+  {"object_type": "todo", "object_id": "todo-1", "relation": "owner",
+   "subject_type": "user", "subject_id": "rick@the-citadel.com"}
+]}
+----
+
+The extension parses the files strictly when the application builds. An unknown field or a malformed entry fails
+the build rather than the first request. The extension imports objects before relations. An import error that Topaz
+reports fails startup.
+
+The `identity` objects with `identifier` relations let `IdentityContexts.subject(...)` resolve a caller. See
+xref:client.adoc#identity-contexts[identity contexts].
+
+== Shared containers
+
+In dev mode with `shared=true`, an application first looks for a running shared container. That container carries
+the label `quarkus-dev-service-topaz` with the value of `service-name`. The application reuses it instead of starting
+one. The extension does not seed a reused container again.
+
+A configured `manifest-location` may differ from the manifest of the shared container. The extension then logs a warning
+and leaves the shared manifest as it is. To load yours, stop the shared container or set
+`quarkus.topaz.devservices.shared=false`.
+
+The same lookup also finds a Topaz service that Compose Dev Services started.
+
+== Rootless Podman
+
+Testcontainers reaches rootless Podman through its user socket, with the Ryuk reaper disabled:
+
+[source,shell]
+----
+export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock
+export TESTCONTAINERS_RYUK_DISABLED=true
+systemctl --user enable --now podman.socket
+----
+
+The Dev Service writes its scratch files under the build output directory in `topaz-devservices/`. These files are
+the generated Topaz config and the copies of `classpath:` locations.

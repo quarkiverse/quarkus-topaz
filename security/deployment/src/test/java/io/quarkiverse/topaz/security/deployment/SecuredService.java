@@ -1,0 +1,80 @@
+package io.quarkiverse.topaz.security.deployment;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+import jakarta.enterprise.context.ApplicationScoped;
+
+import io.quarkiverse.topaz.security.TopazAuthorize;
+import io.quarkiverse.topaz.security.TopazCheck;
+import io.quarkiverse.topaz.security.TopazObjectId;
+import io.quarkiverse.topaz.security.TopazResource;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
+
+@ApplicationScoped
+public class SecuredService {
+
+    public record TodoRef(String id, String note) {
+    }
+
+    public record OwnedTodo(@TopazObjectId String id, String note) {
+    }
+
+    @TopazAuthorize(path = "todoApp.DELETE.todos.__id")
+    public Uni<String> deleteReactive(@TopazResource("id") String id) {
+        return Uni.createFrom().item("deleted " + id);
+    }
+
+    @TopazAuthorize(path = "todoApp.DELETE.todos.__id")
+    public String deleteBlocking(@TopazResource("id") String id) {
+        return "deleted " + id;
+    }
+
+    @TopazAuthorize(path = "todoApp.DELETE.todos.ref")
+    public String deleteRef(@TopazResource("todo") TodoRef ref) {
+        return "deleted " + ref.id();
+    }
+
+    @TopazAuthorize(path = "todoApp.GET.todos", decision = "allowed")
+    public String list() {
+        return "ok";
+    }
+
+    @TopazCheck(objectType = "todo", relation = "owner")
+    public Uni<String> deleteOwned(@TopazObjectId String id) {
+        return Uni.createFrom().item("deleted " + id);
+    }
+
+    @TopazCheck(objectType = "todo", relation = "owner")
+    public String deleteOwnedDto(OwnedTodo todo) {
+        return "deleted " + todo.id();
+    }
+
+    @TopazCheck(objectType = "todo", relation = "owner", objectId = "todo-1")
+    public String deleteFixed() {
+        return "deleted todo-1";
+    }
+
+    private final AtomicInteger streamEntered = new AtomicInteger();
+
+    @TopazAuthorize(path = "todoApp.GET.todos")
+    public Multi<String> streamTodos() {
+        streamEntered.incrementAndGet();
+        return Multi.createFrom().items("todo-1", "todo-2");
+    }
+
+    public int streamEntered() {
+        return streamEntered.get();
+    }
+
+    // todoApp.GET.visibleonly sets visible=true and allowed=false for rick
+    @TopazAuthorize(path = "todoApp.GET.visibleonly", decision = "visible")
+    public String peekVisible() {
+        return "visible";
+    }
+
+    @TopazAuthorize(path = "todoApp.GET.visibleonly", decision = "allowed")
+    public String peekAllowed() {
+        return "allowed";
+    }
+}

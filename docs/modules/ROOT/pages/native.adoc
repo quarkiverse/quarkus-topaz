@@ -1,0 +1,32 @@
+= Native
+
+The extension needs no native configuration from you. It indexes the generated gRPC stubs, so Quarkus gRPC
+registers their protobuf classes for reflection. It also enables SSL support in the native image for TLS connections
+to Topaz. The CI native job checks this with the todo application.
+
+Build the todo application of the integration tests natively with a container build:
+
+[source,shell]
+----
+mvn -pl integration-tests -am verify -Dnative -Dquarkus.native.container-build=true
+----
+
+== Security
+
+`quarkus-topaz-security` reads some application types by reflection and registers them for you:
+
+* The classes that declare a `@TopazObjectId` field or getter.
+* The parameter types annotated `@TopazResource`.
+
+It does not follow those types further. The application must register the nested types, collection element types
+and arrays inside a `@TopazResource` POJO. Use `@RegisterForReflection`, for example.
+
+== Zanzibar connector
+
+`quarkus-topaz-zanzibar` needs no native configuration. The CI native job exercises it through the `/fga/todos`
+endpoints of the todo application.
+
+== Integration tests
+
+`@QuarkusIntegrationTest` classes run against the native executable. To seed or inspect Topaz from the test JVM, use
+xref:client.adoc#building-a-client-outside-cdi[`TopazClient.builder()`]. The builder does not need CDI.

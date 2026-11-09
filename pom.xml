@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.quarkiverse</groupId>
+    <artifactId>quarkiverse-parent</artifactId>
+    <version>26</version>
+  </parent>
+  <groupId>io.quarkiverse.topaz</groupId>
+  <artifactId>quarkus-topaz-parent</artifactId>
+  <version>999-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Quarkus Topaz - Parent</name>
+  <description>Quarkus extensions for the Topaz authorizer and directory</description>
+  <url>https://github.com/quarkiverse/quarkus-topaz</url>
+
+  <scm>
+    <connection>scm:git:git@github.com:quarkiverse/quarkus-topaz.git</connection>
+    <developerConnection>scm:git:git@github.com:quarkiverse/quarkus-topaz.git</developerConnection>
+    <url>https://github.com/quarkiverse/quarkus-topaz</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <modules>
+    <module>grpc</module>
+    <module>runtime</module>
+    <module>deployment</module>
+    <module>security</module>
+    <module>zanzibar</module>
+  </modules>
+
+  <properties>
+    <javadoc.doclint>all,-missing</javadoc.doclint>
+    <quarkus.version>3.40.1</quarkus.version>
+    <assertj.version>3.27.7</assertj.version>
+    <quarkus-zanzibar.version>2.15.0</quarkus-zanzibar.version>
+    <jandex-plugin.version>3.2.7</jandex-plugin.version>
+    <topaz.image>ghcr.io/aserto-dev/topaz:0.33.22</topaz.image>
+    <pb-authorizer.tag>v0.24.0</pb-authorizer.tag>
+    <pb-directory.tag>v0.34.1</pb-directory.tag>
+    <test.argLine>-Djava.util.logging.manager=org.jboss.logmanager.LogManager</test.argLine>
+    <!-- empty default so @{argLine} resolves where nothing (e.g. the Quarkus Maven extension) sets it -->
+    <argLine></argLine>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-bom</artifactId>
+        <version>${quarkus.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>${assertj.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-maven-plugin</artifactId>
+          <version>${quarkus.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-extension-maven-plugin</artifactId>
+          <version>${quarkus.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-config-doc-maven-plugin</artifactId>
+          <version>${quarkus.version}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <argLine>@{argLine} ${test.argLine}</argLine>
+            <systemPropertyVariables>
+              <!-- random port: in a parallel build (-T) several modules run @QuarkusTest/QuarkusUnitTest at once -->
+              <quarkus.http.test-port>0</quarkus.http.test-port>
+            </systemPropertyVariables>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <configuration>
+            <argLine>@{argLine} ${test.argLine}</argLine>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <doclint>${javadoc.doclint}</doclint>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>docs</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>!true</value>
+        </property>
+      </activation>
+      <modules>
+        <module>docs</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>it</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>!true</value>
+        </property>
+      </activation>
+      <modules>
+        <module>integration-tests</module>
+      </modules>
+    </profile>
+  </profiles>
+</project>

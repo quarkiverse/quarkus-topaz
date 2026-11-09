@@ -1,0 +1,5 @@
+:project-version: ${release.current-version}
+:quarkus-version: ${quarkus.version}
+:topaz-image: ${topaz.image}
+
+:examples-dir: ./../examples/
