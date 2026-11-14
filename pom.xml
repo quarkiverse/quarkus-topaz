@@ -9,7 +9,7 @@
   </parent>
   <groupId>io.quarkiverse.topaz</groupId>
   <artifactId>quarkus-topaz-parent</artifactId>
-  <version>0.2.0</version>
+  <version>999-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Quarkus Topaz - Parent</name>
   <description>Quarkus extensions for the Topaz authorizer and directory</description>
@@ -19,7 +19,7 @@
     <connection>scm:git:git@github.com:quarkiverse/quarkus-topaz.git</connection>
     <developerConnection>scm:git:git@github.com:quarkiverse/quarkus-topaz.git</developerConnection>
     <url>https://github.com/quarkiverse/quarkus-topaz</url>
-    <tag>0.2.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <modules>

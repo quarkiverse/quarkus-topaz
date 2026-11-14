@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.quarkiverse.topaz</groupId>
     <artifactId>quarkus-topaz-security-parent</artifactId>
-    <version>0.2.0</version>
+    <version>999-SNAPSHOT</version>
   </parent>
   <artifactId>quarkus-topaz-security-deployment</artifactId>
   <name>Topaz Security - Deployment</name>
