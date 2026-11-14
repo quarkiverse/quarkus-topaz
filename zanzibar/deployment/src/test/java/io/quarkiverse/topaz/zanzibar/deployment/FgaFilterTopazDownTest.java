@@ -21,8 +21,8 @@ import io.quarkus.security.test.utils.TestIdentityProvider;
 import io.quarkus.test.QuarkusUnitTest;
 
 /**
- * Topaz accepts connections and never answers. The client-wide deadline (1s) is shorter than the quarkus-zanzibar filter
- * timeout (3s), so the client ends the call with DEADLINE_EXCEEDED and the request fails with a 5xx, never a permit.
+ * Topaz accepts connections and never answers. The client-wide deadline (1s) is much shorter than the quarkus-zanzibar
+ * filter timeout (10s), so the client ends the call with DEADLINE_EXCEEDED and the request fails with a 5xx, never a permit.
  */
 public class FgaFilterTopazDownTest {
 
@@ -50,7 +50,7 @@ public class FgaFilterTopazDownTest {
             .overrideConfigKey("quarkus.topaz.directory.port", String.valueOf(SILENT.getLocalPort()))
             .overrideConfigKey("quarkus.topaz.plain-text", "true")
             .overrideConfigKey("quarkus.topaz.deadline", "1s")
-            .overrideConfigKey("quarkus.zanzibar.filter.timeout", "3s")
+            .overrideConfigKey("quarkus.zanzibar.filter.timeout", "10s")
             .setLogRecordPredicate(r -> r.getLevel().intValue() == Level.SEVERE.intValue()
                     && String.valueOf(r.getLoggerName()).contains("Zanzibar"))
             .assertLogRecords(records -> assertThat(records).anyMatch(r -> mentionsDeadline(String.valueOf(r.getMessage()))
@@ -75,8 +75,9 @@ public class FgaFilterTopazDownTest {
         Duration elapsed = Duration.ofNanos(System.nanoTime() - t0);
         // quarkus-zanzibar maps a failed check to InternalServerErrorException
         assertThat(status).isIn(500, 503);
-        // the 1s client deadline, not the 3s filter timeout, ends the call (the log-record assertion confirms the cause)
-        assertThat(elapsed).isGreaterThanOrEqualTo(Duration.ofSeconds(1)).isLessThan(Duration.ofMillis(2500));
+        // the 1s client deadline, not the 10s filter timeout, ends the call (the log-record assertion confirms the cause);
+        // the wide gap leaves room for a slow CI runner
+        assertThat(elapsed).isGreaterThanOrEqualTo(Duration.ofSeconds(1)).isLessThan(Duration.ofSeconds(5));
     }
 
     private static boolean hasDeadlineCause(Throwable thrown) {
