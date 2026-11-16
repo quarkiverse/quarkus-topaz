@@ -156,6 +156,29 @@ endif::add-copy-button-to-env-var[]
 |link:https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/Duration.html[Duration] link:#duration-note-anchor-quarkus-topaz-security_quarkus-topaz[icon:question-circle[title=More information about the Duration format]]
 |`+++5S+++`
 
+a| [[quarkus-topaz-security_quarkus-topaz-enforcement-permissions-prefixes]] [.property-path]##link:#quarkus-topaz-security_quarkus-topaz-enforcement-permissions-prefixes[`+++quarkus.topaz.enforcement.permissions.prefixes+++`]##
+ifdef::add-copy-button-to-config-props[]
+config_property_copy_button:+++quarkus.topaz.enforcement.permissions.prefixes+++[]
+endif::add-copy-button-to-config-props[]
+
+
+[.description]
+--
+Get the name prefixes, besides the policy root, whose permissions the `@PermissionsAllowed` bridge evaluates in Topaz.
+
+A prefix owns a permission named exactly like it or starting with the prefix followed by `.`. The bridge leaves any other permission to the other permission checkers.
+
+
+ifdef::add-copy-button-to-env-var[]
+Environment variable: env_var_with_copy_button:+++QUARKUS_TOPAZ_ENFORCEMENT_PERMISSIONS_PREFIXES+++[]
+endif::add-copy-button-to-env-var[]
+ifndef::add-copy-button-to-env-var[]
+Environment variable: `+++QUARKUS_TOPAZ_ENFORCEMENT_PERMISSIONS_PREFIXES+++`
+endif::add-copy-button-to-env-var[]
+--
+|list of string
+|
+
 |===
 
 ifndef::no-duration-note[]

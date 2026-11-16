@@ -1,5 +1,6 @@
 package io.quarkiverse.topaz.security.runtime;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 import jakarta.enterprise.inject.Instance;
@@ -44,6 +45,29 @@ public class TopazSecurityRecorder {
         if (policyRootRequired || permissionUsesTopaz()) {
             throw new ConfigurationException("quarkus.topaz.enforcement.policy-root must be set when the 'topaz' HTTP"
                     + " security policy or a derived @TopazAuthorize path is used");
+        }
+    }
+
+    /**
+     * Fail startup when the {@code @PermissionsAllowed} bridge is on but does not know which permissions are Topaz's.
+     * <p>
+     * The bridge owns the names under the policy root and under the configured prefixes. It needs at least one of
+     * them, and no prefix may be blank.
+     */
+    public void validatePermissionBridge() {
+        TopazEnforcementConfig c = config.getValue();
+        List<String> prefixes = c.permissions().prefixes().orElse(List.of());
+        for (String prefix : prefixes) {
+            if (prefix == null || prefix.isBlank()) {
+                throw new ConfigurationException(
+                        "quarkus.topaz.enforcement.permissions.prefixes must not contain a blank entry");
+            }
+        }
+        if (c.policyRoot().filter(r -> !r.isBlank()).isEmpty() && prefixes.isEmpty()) {
+            throw new ConfigurationException("The @PermissionsAllowed bridge"
+                    + " (quarkus.topaz.enforcement.permissions.enabled=true) needs"
+                    + " quarkus.topaz.enforcement.policy-root or quarkus.topaz.enforcement.permissions.prefixes to know"
+                    + " which permissions Topaz evaluates");
         }
     }
 

@@ -1,6 +1,7 @@
 package io.quarkiverse.topaz.security.runtime;
 
 import java.security.Permission;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -27,8 +28,12 @@ import io.smallrye.mutiny.Uni;
  * It is installed only when {@code quarkus.topaz.enforcement.permissions.enabled=true}.
  * <p>
  * It adds a permission checker to every authenticated identity and leaves anonymous identities unchanged. The checker
- * checks a {@link TopazRelation} against the directory. It evaluates any other permission as the policy path named by
- * {@link Permission#getName()}, with an empty resource context.
+ * checks a {@link TopazRelation} against the directory. It evaluates a permission named under
+ * {@code quarkus.topaz.enforcement.policy-root} or {@code quarkus.topaz.enforcement.permissions.prefixes} as the policy
+ * path named by {@link Permission#getName()}, with an empty resource context.
+ * <p>
+ * For any other permission the checker abstains: it returns {@code null}, Quarkus skips it, and Topaz is not called.
+ * The other permission checkers decide, and Quarkus denies the permission when none grants it.
  * <p>
  * A permission with actions is not supported and is denied. An example is
  * {@code @PermissionsAllowed("todoApp.GET.todos:write")}.
@@ -89,10 +94,16 @@ public class TopazPermissionAugmentor implements SecurityIdentityAugmentor {
      *
      * @param identity the identity
      * @param permission the permission
-     * @return {@code true} when Topaz permits, {@code false} on a denial, an error or a timeout
+     * @return {@code true} when Topaz permits, {@code false} on a denial, an error or a timeout, and {@code null} to
+     *         abstain for a permission the bridge does not own
      */
     private Uni<Boolean> check(SecurityIdentity identity, Permission permission) {
         Uni<Boolean> check;
+        if (!(permission instanceof TopazRelation) && !PermissionOwnership.owns(permission.getName(),
+                config.policyRoot(), config.permissions().prefixes().orElse(List.of()))) {
+            LOG.debugf("Topaz bridge abstains for %s: outside the policy root and prefixes", permission.getName());
+            return null;
+        }
         if (permission instanceof TopazRelation relation) {
             check = dispatch.run(() -> relation(identity, relation), MapperDispatch.Point.BRIDGE_RELATION, false)
                     .onFailure().recoverWithItem(e -> {

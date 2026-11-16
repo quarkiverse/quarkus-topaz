@@ -296,12 +296,17 @@ class TopazSecurityProcessor {
      * @param recorder the recorder
      * @param index the combined index
      * @param vertx the Vert.x build item that fixes the step order
+     * @param buildTimeConfig the build-time configuration
      */
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
-    void validate(TopazSecurityRecorder recorder, CombinedIndexBuildItem index, VertxBuildItem vertx) {
+    void validate(TopazSecurityRecorder recorder, CombinedIndexBuildItem index, VertxBuildItem vertx,
+            TopazEnforcementBuildTimeConfig buildTimeConfig) {
         boolean derivedPath = derivedTopazAuthorizePath(index.getIndex());
         recorder.validate(annotationUsesTopazPolicy(index) || derivedPath);
+        if (buildTimeConfig.permissions().enabled()) {
+            recorder.validatePermissionBridge();
+        }
     }
 
     /**

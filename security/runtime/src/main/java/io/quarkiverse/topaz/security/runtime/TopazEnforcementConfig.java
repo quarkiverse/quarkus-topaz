@@ -58,6 +58,29 @@ public interface TopazEnforcementConfig {
     Duration timeout();
 
     /**
+     * Get the run-time configuration of the {@code @PermissionsAllowed} bridge.
+     *
+     * @return the bridge configuration
+     */
+    Permissions permissions();
+
+    /**
+     * Run-time configuration of the {@code @PermissionsAllowed} bridge.
+     */
+    interface Permissions {
+        /**
+         * Get the name prefixes, besides the policy root, whose permissions the {@code @PermissionsAllowed} bridge
+         * evaluates in Topaz.
+         * <p>
+         * A prefix owns a permission named exactly like it or starting with the prefix followed by {@code .}. The
+         * bridge leaves any other permission to the other permission checkers.
+         *
+         * @return the prefixes, if set
+         */
+        Optional<List<String>> prefixes();
+    }
+
+    /**
      * The handling of requests that carry no identity.
      */
     enum Anonymous {

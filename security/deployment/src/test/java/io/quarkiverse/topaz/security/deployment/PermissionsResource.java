@@ -43,4 +43,28 @@ public class PermissionsResource {
     public String malformed(@PathParam("id") String id) {
         return "deleted " + id;
     }
+
+    // owned by nobody but a test augmentor
+    @GET
+    @Path("/billing")
+    @PermissionsAllowed("billing.read")
+    public String billing() {
+        return "billing";
+    }
+
+    // owned and granted by nobody
+    @GET
+    @Path("/other")
+    @PermissionsAllowed("other.write")
+    public String other() {
+        return "other";
+    }
+
+    // looks like the policy root but is outside it
+    @GET
+    @Path("/lookalike")
+    @PermissionsAllowed("todoAppX.GET.todos")
+    public String lookalike() {
+        return "lookalike";
+    }
 }

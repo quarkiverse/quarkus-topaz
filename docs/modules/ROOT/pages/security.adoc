@@ -289,10 +289,13 @@ public List<String> list() { ... }
 public void delete(@PathParam("id") String id) { ... }
 ----
 
-* A plain permission name, a `StringPermission`, is a policy path. The bridge evaluates it with the configured
-decision and an empty resource context. The bridge does not check policy paths against `policy-root`. It does not
-support actions. It denies a permission with actions, such as `@PermissionsAllowed("todoApp.GET.todos:write")`, and
-logs a WARN.
+* A plain permission name, a `StringPermission`, is a policy path when the bridge owns it. The bridge evaluates it
+with the configured decision and an empty resource context. It does not support actions. It denies an owned
+permission with actions, such as `@PermissionsAllowed("todoApp.GET.todos:write")`, and logs a WARN.
+* The bridge owns a name that equals `quarkus.topaz.enforcement.policy-root` or an entry of
+`quarkus.topaz.enforcement.permissions.prefixes`, or that starts with one of them followed by `.`. With the root
+`todoApp`, it owns `todoApp.GET.todos` but not `todoAppX.GET.todos`. For any other name it abstains: it does not call
+Topaz, and the other permission checkers decide. Quarkus denies a permission that no checker grants.
 * A `TopazRelation` is a directory check. Its name is `objectType#relation` or `objectType#relation@subjectType`. The
 subject type defaults to `user`. Its object id is its constructor parameter `id`, and Quarkus matches that parameter by
 name. The secured method needs a parameter named `id`. Otherwise `params` names the parameter that supplies the id,
@@ -314,6 +317,24 @@ The bridge does not augment anonymous callers, so they get a 401. An error or a 
 Quarkus grants a permission when any permission of the identity implies it. Another `SecurityIdentityAugmentor` or a
 role mapping may grant a `StringPermission` of the same name. That permission then bypasses Topaz for that name. Nothing
 bypasses Topaz for a `TopazRelation`. Its `implies` always returns `false`, so only the Topaz check grants it.
+
+With the bridge on, startup fails unless `policy-root` or `permissions.prefixes` is set, even when the application
+only uses `TopazRelation`. A blank entry in `permissions.prefixes` also fails startup. Add prefixes for policy names
+outside the root:
+
+[source,properties]
+----
+quarkus.topaz.enforcement.permissions.enabled=true
+quarkus.topaz.enforcement.policy-root=todoApp
+quarkus.topaz.enforcement.permissions.prefixes=billing,reports
+----
+
+=== Migrating from 0.2.x
+
+In 0.2.x the bridge evaluated every plain permission name as a policy path. From 0.3.0 it only evaluates names it
+owns. A name outside the policy root and the prefixes is no longer sent to Topaz. If no other checker grants it, the
+call now gets a 403, so add that name's prefix to `quarkus.topaz.enforcement.permissions.prefixes`. Nothing that was
+denied before is permitted now.
 
 == Customizing
 
