@@ -232,9 +232,11 @@ are not part of the derived template. For such resources, set `path` explicitly 
 configuration.
 
 A deny, an error or a timeout is a 403 with `ForbiddenException`. An anonymous caller gets a 401 unless
-`anonymous=evaluate`. The interceptor checks a method that returns `Uni` or `Multi` on subscription. Any other method
-waits for the decision, including one that returns `CompletionStage`. Such a method must run on a worker thread. On
-the event loop, it fails with `IllegalStateException`.
+`anonymous=evaluate`. The interceptor checks a method that returns `Uni` or `Multi` on subscription. A method whose
+declared return type is `CompletionStage` or `CompletableFuture` waits for the decision on a worker thread. On the
+event loop, it is checked without blocking, and its body runs on the caller's context once the check passes. A deny
+fails the returned future. Any other method waits for the decision and must run on a worker thread. On the event loop,
+it fails with `IllegalStateException`.
 
 == `@TopazCheck`
 
@@ -265,7 +267,7 @@ The extension converts the value with `toString()`.
 An anonymous caller always gets a 401, whatever `anonymous` says, because a relation check needs a subject. A failed
 check, a directory error or a timeout is a 403. A misconfiguration found at call time is a 403 too, with a WARN. These
 misconfigurations are a missing object id source, `@TopazObjectId` on two parameters, and a null or blank id. `Uni`,
-`Multi` and blocking methods dispatch as for `@TopazAuthorize`.
+`Multi`, `CompletionStage` and blocking methods dispatch as for `@TopazAuthorize`.
 
 Both interceptors run at priority `Interceptor.Priority.PLATFORM_BEFORE + 210`. They run after the Quarkus security
 interceptors, such as `@RolesAllowed` and `@Authenticated`.

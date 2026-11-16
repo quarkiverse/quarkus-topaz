@@ -1,15 +1,20 @@
 package io.quarkiverse.topaz.security.deployment;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import io.quarkiverse.topaz.security.TopazAuthorize;
 import io.quarkiverse.topaz.security.TopazCheck;
 import io.quarkiverse.topaz.security.TopazObjectId;
 import io.quarkiverse.topaz.security.TopazResource;
+import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.Context;
 
 @ApplicationScoped
 public class SecuredService {
@@ -76,5 +81,28 @@ public class SecuredService {
     @TopazAuthorize(path = "todoApp.GET.visibleonly", decision = "allowed")
     public String peekAllowed() {
         return "allowed";
+    }
+
+    @Inject
+    SecurityIdentity identity;
+
+    // where the body runs and who it sees, so tests can tell the event loop from a worker
+    private String where() {
+        return (Context.isOnEventLoopThread() ? "event-loop" : "worker") + " as " + identity.getPrincipal().getName();
+    }
+
+    @TopazAuthorize(path = "todoApp.DELETE.todos.__id")
+    public CompletionStage<String> deleteStage(@TopazResource("id") String id) {
+        return CompletableFuture.completedFuture("deleted " + id + " on " + where());
+    }
+
+    @TopazCheck(objectType = "todo", relation = "owner")
+    public CompletableFuture<String> deleteOwnedFuture(@TopazObjectId String id) {
+        return CompletableFuture.completedFuture("deleted " + id + " on " + where());
+    }
+
+    @TopazCheck(objectType = "todo", relation = "owner")
+    public CompletionStage<String> deleteOwnedThrowing(@TopazObjectId String id) {
+        throw new IllegalStateException("boom");
     }
 }
