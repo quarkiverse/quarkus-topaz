@@ -69,20 +69,26 @@ allowed if {
 }
 ----
 
-Inject `TopazClient` and ask for the decision:
+Inject `TopazClient` and ask for the decision for the authenticated caller:
 
 [source,java]
 ----
 @Inject
 TopazClient topaz;
 
+@Inject
+SecurityIdentity identity;
+
 @GET
 @Path("/todos/{id}/can-delete")
-public Uni<Boolean> canDelete(@PathParam("id") String id, @QueryParam("user") String user) {
-    return topaz.authorizer().isAllowed(IdentityContexts.subject(user), "todoApp.DELETE.todos.__id",
-            "allowed", Map.of("id", id));
+public Uni<Boolean> canDelete(@PathParam("id") String id) {
+    return topaz.authorizer().isAllowed(IdentityContexts.subject(identity.getPrincipal().getName()),
+            "todoApp.DELETE.todos.__id", "allowed", Map.of("id", id));
 }
 ----
+
+Any Quarkus authentication extension, such as OIDC, supplies the `SecurityIdentity`. Take the subject from the
+authenticated identity, never from the request itself, or any caller could ask as anyone.
 
 `quarkus dev` starts Topaz {topaz-image}, loads the manifest and data, and configures the client. The full
 manifest and data files are in `integration-tests/src/main/resources/topaz/`.

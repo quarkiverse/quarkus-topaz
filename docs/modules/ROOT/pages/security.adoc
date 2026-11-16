@@ -468,6 +468,13 @@ The extension stores only successful decisions and never caches an error. The ca
 `@TopazAuthorize` and plain `@PermissionsAllowed` names, not to relation checks. The implementation decides any expiry
 and size bounds.
 
+A cached entry keeps its answer until the implementation expires it. The extension stores denials as well as
+allows, and a change in Topaz never evicts an entry. A cached allow therefore outlives a revoked relation or policy
+change, and a cached deny outlives a new grant. An in-memory cache is per process, so instances can disagree until
+their entries expire. A shared cache, such as Redis, agrees across instances but is just as stale. When revocations
+must take effect quickly, keep expiries short, in seconds rather than minutes, or install no cache. Relation checks
+(`@TopazCheck` and `TopazRelation`) are never cached, so they always see the current directory.
+
 == Configuration
 
 [cols="2,3"]
