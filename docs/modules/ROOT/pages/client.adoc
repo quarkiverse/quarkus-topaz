@@ -122,6 +122,11 @@ per-service name, it falls back to `quarkus.topaz.tls-configuration-name`.
 With no name set, the client looks at the default TLS configuration of the registry. It uses that configuration
 when it defines a trust store or trust-all. Otherwise the channel is plaintext.
 
+The client logs a WARN when it builds such an implicit plaintext channel to a host other than `localhost`,
+`127.x.x.x` or `::1`, because API keys and tokens would cross the network in clear. The check reads the host name
+only and never resolves it. Set `quarkus.topaz.plain-text=true` to confirm plaintext and silence it, or configure
+TLS. The Dev Service sets `plain-text=true`, so it never warns.
+
 `plain-text=false` requires TLS. Without a named configuration or a usable registry default, the channel uses TLS
 with the default JVM trust store. It never falls back to plaintext. A TLS configuration name that the registry
 does not know fails startup.

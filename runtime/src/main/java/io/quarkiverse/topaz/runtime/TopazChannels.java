@@ -3,6 +3,9 @@ package io.quarkiverse.topaz.runtime;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
+
+import org.jboss.logging.Logger;
 
 import io.grpc.Channel;
 import io.grpc.ClientInterceptor;
@@ -21,6 +24,10 @@ import io.vertx.grpc.client.GrpcClientOptions;
  * Factory of Vert.x gRPC channels for Topaz services.
  */
 public final class TopazChannels {
+
+    private static final Logger LOG = Logger.getLogger(TopazChannels.class);
+
+    private static final Pattern LOOPBACK_V4 = Pattern.compile("127\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
 
     private TopazChannels() {
     }
@@ -75,9 +82,43 @@ public final class TopazChannels {
             // plain-text=false without a usable TLS configuration uses TLS with the JVM default trust.
             http.setSsl(true).setUseAlpn(true);
         } else {
+            implicitPlaintextWarning(s, tls).ifPresent(LOG::warn);
             http.setSsl(false).setHttp2ClearTextUpgrade(false);
         }
         return http;
+    }
+
+    /**
+     * Get the warning for a plaintext channel to a remote host that nobody asked for.
+     * <p>
+     * It applies when {@code plain-text} is unset, no TLS configuration is named or resolved, and the host is not
+     * loopback. API keys and tokens would then cross the network in clear.
+     *
+     * @param s the settings of the service
+     * @param tls the resolved TLS configuration, if any
+     * @return the warning text, or empty when the channel is not implicit plaintext to a remote host
+     */
+    static Optional<String> implicitPlaintextWarning(ResolvedServiceSettings s, Optional<TlsConfiguration> tls) {
+        if (s.plainText().isPresent() || tls.isPresent() || s.tlsConfigurationName().isPresent()
+                || isLoopback(s.host())) {
+            return Optional.empty();
+        }
+        return Optional.of("Topaz service " + s.host() + ":" + s.port() + " uses a plaintext channel because neither"
+                + " quarkus.topaz.plain-text nor a TLS configuration is set. Set quarkus.topaz.plain-text=true to"
+                + " confirm plaintext, or configure TLS.");
+    }
+
+    /**
+     * Tell whether a host names the loopback interface.
+     * <p>
+     * It reads the string only and never resolves the name.
+     *
+     * @param host the host
+     * @return {@code true} for {@code localhost}, a {@code 127.x.x.x} address and {@code ::1}
+     */
+    static boolean isLoopback(String host) {
+        return "localhost".equalsIgnoreCase(host) || LOOPBACK_V4.matcher(host).matches() || "::1".equals(host)
+                || "[::1]".equals(host);
     }
 
     /**
