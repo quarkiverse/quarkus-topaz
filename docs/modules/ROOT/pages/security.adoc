@@ -321,7 +321,7 @@ role mapping may grant a `StringPermission` of the same name. That permission th
 bypasses Topaz for a `TopazRelation`. Its `implies` always returns `false`, so only the Topaz check grants it.
 
 With the bridge on, startup fails unless `policy-root` or `permissions.prefixes` is set, even when the application
-only uses `TopazRelation`. A blank entry in `permissions.prefixes` also fails startup. Add prefixes for policy names
+only uses `TopazRelation`. A blank entry in `permissions.prefixes`, or one that starts or ends with `.`, also fails startup. Add prefixes for policy names
 outside the root:
 
 [source,properties]

@@ -60,6 +60,11 @@ public class SecuredService {
         return "deleted todo-1";
     }
 
+    @TopazCheck(objectType = "todo", relation = "owner")
+    public CompletionStage<String> deleteOwnedError(@TopazObjectId String id) {
+        throw new AssertionError("boom");
+    }
+
     private final AtomicInteger streamEntered = new AtomicInteger();
 
     @TopazAuthorize(path = "todoApp.GET.todos")

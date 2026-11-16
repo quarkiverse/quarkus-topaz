@@ -52,7 +52,7 @@ public class TopazSecurityRecorder {
      * Fail startup when the {@code @PermissionsAllowed} bridge is on but does not know which permissions are Topaz's.
      * <p>
      * The bridge owns the names under the policy root and under the configured prefixes. It needs at least one of
-     * them, and no prefix may be blank.
+     * them. No prefix may be blank or start or end with {@code .}.
      */
     public void validatePermissionBridge() {
         TopazEnforcementConfig c = config.getValue();
@@ -61,6 +61,12 @@ public class TopazSecurityRecorder {
             if (prefix == null || prefix.isBlank()) {
                 throw new ConfigurationException(
                         "quarkus.topaz.enforcement.permissions.prefixes must not contain a blank entry");
+            }
+            String trimmed = prefix.trim();
+            if (trimmed.startsWith(".") || trimmed.endsWith(".")) {
+                // such a prefix would own no name at all
+                throw new ConfigurationException("quarkus.topaz.enforcement.permissions.prefixes entry '" + trimmed
+                        + "' must not start or end with '.'");
             }
         }
         if (c.policyRoot().filter(r -> !r.isBlank()).isEmpty() && prefixes.isEmpty()) {

@@ -128,4 +128,10 @@ public class ServiceResource {
     public CompletionStage<String> deleteStageBlocking(@PathParam("todo") String todo) {
         return service.deleteStage(todo);
     }
+
+    @DELETE
+    @Path("owned-error/{todo}")
+    public CompletionStage<String> deleteOwnedError(@PathParam("todo") String todo) {
+        return service.deleteOwnedError(todo);
+    }
 }

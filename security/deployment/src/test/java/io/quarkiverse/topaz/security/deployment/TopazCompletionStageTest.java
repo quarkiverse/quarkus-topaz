@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
 import io.quarkus.test.QuarkusUnitTest;
+import io.restassured.RestAssured;
+import io.restassured.config.HttpClientConfig;
 
 /**
  * {@code @TopazAuthorize} and {@code @TopazCheck} on methods returning {@code CompletionStage}: checked without blocking
@@ -72,6 +74,15 @@ public class TopazCompletionStageTest {
                 .delete("/service/owned-throwing/todo-1").then().statusCode(500);
         given().auth().preemptive().basic("morty@the-citadel.com", "morty")
                 .delete("/service/owned-throwing/todo-1").then().statusCode(403);
+    }
+
+    // an Error from the body must fail the request, not leave it hanging
+    @Test
+    void errorFromBodyFails() {
+        given().config(RestAssured.config().httpClient(HttpClientConfig.httpClientConfig()
+                .setParam("http.socket.timeout", 10_000)))
+                .auth().preemptive().basic("rick@the-citadel.com", "rick")
+                .delete("/service/owned-error/todo-1").then().statusCode(500);
     }
 
     @Test

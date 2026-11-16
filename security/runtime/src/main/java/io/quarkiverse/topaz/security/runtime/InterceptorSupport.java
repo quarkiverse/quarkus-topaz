@@ -178,7 +178,8 @@ public class InterceptorSupport {
             CompletionStage<?> body;
             try {
                 body = (CompletionStage<?>) ctx.proceed();
-            } catch (Exception e) {
+            } catch (Throwable e) {
+                // an Error too: escaping this callback would leave the future, and the request, hanging
                 result.completeExceptionally(e);
                 return;
             }
