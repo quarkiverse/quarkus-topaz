@@ -306,7 +306,7 @@ subject type. Each part:
 * Ends with a letter or a digit.
 * Contains only letters, digits, `.`, `_` and `-` in between.
 
-The rule matches Topaz 0.33.22. Quarkus builds the permission when the secured method runs. Any other name fails at
+The rule matches Topaz 0.33.28. Quarkus builds the permission when the secured method runs. Any other name fails at
 that point, and Quarkus denies the call with 403.
 
 The bridge does not augment anonymous callers, so they get a 401. An error or a timeout denies.

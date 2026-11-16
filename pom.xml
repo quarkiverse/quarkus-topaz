@@ -36,7 +36,7 @@
     <assertj.version>3.27.7</assertj.version>
     <quarkus-zanzibar.version>2.16.0</quarkus-zanzibar.version>
     <jandex-plugin.version>3.6.1</jandex-plugin.version>
-    <topaz.image>ghcr.io/aserto-dev/topaz:0.33.22</topaz.image>
+    <topaz.image>ghcr.io/aserto-dev/topaz:0.33.28</topaz.image>
     <pb-authorizer.tag>v0.24.0</pb-authorizer.tag>
     <pb-directory.tag>v0.34.1</pb-directory.tag>
     <test.argLine>-Djava.util.logging.manager=org.jboss.logmanager.LogManager</test.argLine>

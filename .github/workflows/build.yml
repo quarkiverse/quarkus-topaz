@@ -76,5 +76,5 @@ jobs:
           cache: 'maven'
 
       # The deployment tests again against the previous Topaz release, to catch protocol or behaviour drift.
-      - name: Test against Topaz 0.33.21
-        run: mvn -B -ntp -Dno-format -pl deployment,security/deployment,zanzibar/deployment -am test -Dquarkus.topaz.devservices.image-name=ghcr.io/aserto-dev/topaz:0.33.21
+      - name: Test against Topaz 0.33.22
+        run: mvn -B -ntp -Dno-format -pl deployment,security/deployment,zanzibar/deployment -am test -Dquarkus.topaz.devservices.image-name=ghcr.io/aserto-dev/topaz:0.33.22

@@ -61,7 +61,7 @@ public class DevServicesTopazTest {
 
     @Test
     void unknownPolicyPathPropagatesError() {
-        // The error must come from Topaz (INVALID_ARGUMENT E30010 on 0.33.22), not from failing to reach it
+        // The error must come from Topaz (INVALID_ARGUMENT E30010 on 0.33.28), not from failing to reach it
         assertThatThrownBy(() -> topaz.authorizer().isAllowed(subject("rick@the-citadel.com"), "todoApp.NOPE",
                 "allowed", Map.of()).await().atMost(ofSeconds(10)))
                 .isInstanceOf(StatusRuntimeException.class)
