@@ -78,3 +78,30 @@ jobs:
       # The deployment tests again against the previous Topaz release, to catch protocol or behaviour drift.
       - name: Test against Topaz 0.33.22
         run: mvn -B -ntp -Dno-format -pl deployment,security/deployment,zanzibar/deployment -am test -Dquarkus.topaz.devservices.image-name=ghcr.io/aserto-dev/topaz:0.33.22
+
+  quarkus-main:
+    name: Quarkus main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Quarkus main (the 4.0 line, with Vert.x 5 and Jackson 3) from the snapshot the Quarkus ecosystem CI publishes.
+      # The extension must keep working on it, so every PR builds and tests against it.
+      - name: Install the Quarkus main snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release list --repo quarkusio/quarkus-ecosystem-ci --limit 30 --json tagName \
+            --jq '[.[] | select(.tagName | startswith("maven-repo-main-"))][0].tagName')
+          echo "Using $tag"
+          gh release download "$tag" --repo quarkusio/quarkus-ecosystem-ci --pattern maven-repo.tar.gz --dir "$RUNNER_TEMP"
+          mkdir -p ~/.m2/repository
+          tar xzf "$RUNNER_TEMP/maven-repo.tar.gz" -C ~/.m2/repository
+
+      - name: Build with Maven against Quarkus main
+        run: mvn -B -ntp clean install -Dno-format -Dquarkus.version=999-SNAPSHOT

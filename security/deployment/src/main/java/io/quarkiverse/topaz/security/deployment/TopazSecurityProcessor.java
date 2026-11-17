@@ -1,9 +1,5 @@
 package io.quarkiverse.topaz.security.deployment;
 
-import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
-
-import io.quarkiverse.topaz.security.runtime.JacksonConverter;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -29,6 +25,7 @@ import io.quarkiverse.topaz.security.runtime.DefaultPolicyPathMapper;
 import io.quarkiverse.topaz.security.runtime.DefaultResourceContextMapper;
 import io.quarkiverse.topaz.security.runtime.DefaultSubjectMapper;
 import io.quarkiverse.topaz.security.runtime.InterceptorSupport;
+import io.quarkiverse.topaz.security.runtime.JacksonConverter;
 import io.quarkiverse.topaz.security.runtime.NoopDecisionCache;
 import io.quarkiverse.topaz.security.runtime.NoopResourceMethodInfoResolver;
 import io.quarkiverse.topaz.security.runtime.TopazAuthorizeInterceptor;
@@ -40,6 +37,7 @@ import io.quarkiverse.topaz.security.runtime.TopazSecurityRecorder;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.ExcludedTypeBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
+import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
