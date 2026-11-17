@@ -1,5 +1,7 @@
 package io.quarkiverse.topaz.security.deployment;
 
+import java.util.concurrent.CompletionStage;
+
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -100,5 +102,36 @@ public class ServiceResource {
     @Blocking
     public String visibleAsAllowed() {
         return service.peekAllowed();
+    }
+
+    @DELETE
+    @Path("stage/{todo}")
+    public CompletionStage<String> deleteStage(@PathParam("todo") String todo) {
+        return service.deleteStage(todo);
+    }
+
+    @DELETE
+    @Path("owned-future/{todo}")
+    public CompletionStage<String> deleteOwnedFuture(@PathParam("todo") String todo) {
+        return service.deleteOwnedFuture(todo);
+    }
+
+    @DELETE
+    @Path("owned-throwing/{todo}")
+    public CompletionStage<String> deleteOwnedThrowing(@PathParam("todo") String todo) {
+        return service.deleteOwnedThrowing(todo);
+    }
+
+    @DELETE
+    @Path("stage-blocking/{todo}")
+    @Blocking
+    public CompletionStage<String> deleteStageBlocking(@PathParam("todo") String todo) {
+        return service.deleteStage(todo);
+    }
+
+    @DELETE
+    @Path("owned-error/{todo}")
+    public CompletionStage<String> deleteOwnedError(@PathParam("todo") String todo) {
+        return service.deleteOwnedError(todo);
     }
 }

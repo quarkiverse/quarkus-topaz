@@ -3,6 +3,9 @@ package io.quarkiverse.topaz.security.runtime;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -111,8 +114,9 @@ public class InterceptorSupport {
     /**
      * Run the intercepted method once {@code check} succeeds.
      * <p>
-     * A method returning {@link Uni} or {@link Multi} is checked on subscription. Any other method blocks on the check,
-     * which requires a thread that may block.
+     * A method returning {@link Uni} or {@link Multi} is checked on subscription. On a thread that may not block, a
+     * method whose declared return type is {@link CompletionStage} or {@link CompletableFuture} is checked without
+     * blocking. Any other method blocks on the check, which requires a thread that may block.
      *
      * @param ctx the invocation
      * @param check completes when the call is permitted and fails with {@link UnauthorizedException} or
@@ -142,6 +146,9 @@ public class InterceptorSupport {
             }));
         }
         if (!BlockingOperationControl.isBlockingAllowed()) {
+            if (returnType == CompletionStage.class || returnType == CompletableFuture.class) {
+                return stage(ctx, check);
+            }
             throw new IllegalStateException(EVENT_LOOP_MESSAGE);
         }
         try {
@@ -151,5 +158,45 @@ public class InterceptorSupport {
             throw new ForbiddenException();
         }
         return ctx.proceed();
+    }
+
+    /**
+     * Run a method returning {@link CompletionStage} or {@link CompletableFuture} once {@code check} succeeds, without
+     * blocking.
+     * <p>
+     * The check starts now, because a stage is eager. The body runs where the check completes, which is the caller's
+     * Vert.x context for a caller that may not block. The returned future fails with the check's exception, or with the
+     * body's when it throws or returns {@code null}.
+     *
+     * @param ctx the invocation
+     * @param check the check
+     * @return the future of the method's result
+     */
+    private static CompletableFuture<Object> stage(InvocationContext ctx, Uni<Void> check) {
+        CompletableFuture<Object> result = new CompletableFuture<>();
+        check.subscribe().with(v -> {
+            CompletionStage<?> body;
+            try {
+                body = (CompletionStage<?>) ctx.proceed();
+            } catch (Throwable e) {
+                // an Error too: escaping this callback would leave the future, and the request, hanging
+                result.completeExceptionally(e);
+                return;
+            }
+            if (body == null) {
+                result.completeExceptionally(new IllegalStateException(ctx.getMethod() + " returned null"));
+                return;
+            }
+            body.whenComplete((item, failure) -> {
+                if (failure != null) {
+                    result.completeExceptionally(
+                            failure instanceof CompletionException && failure.getCause() != null ? failure.getCause()
+                                    : failure);
+                } else {
+                    result.complete(item);
+                }
+            });
+        }, result::completeExceptionally);
+        return result;
     }
 }

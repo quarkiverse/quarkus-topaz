@@ -21,6 +21,55 @@ class TopazChannelsTest {
         return new ResolvedServiceSettings("localhost", 8282, Optional.empty(), tlsName, plainText, Optional.empty());
     }
 
+    private static ResolvedServiceSettings settings(String host, Optional<Boolean> plainText) {
+        return new ResolvedServiceSettings(host, 8282, Optional.empty(), Optional.empty(), plainText, Optional.empty());
+    }
+
+    @Test
+    void loopbackHostsAreSilent() {
+        for (String host : List.of("localhost", "LOCALHOST", "127.0.0.1", "127.10.0.1", "::1", "[::1]")) {
+            assertThat(TopazChannels.isLoopback(host)).as(host).isTrue();
+        }
+        for (String host : List.of("topaz.example.com", "10.0.0.5", "128.0.0.1", "localhost.example.com",
+                "127.0.0.1.example.com")) {
+            assertThat(TopazChannels.isLoopback(host)).as(host).isFalse();
+        }
+    }
+
+    @Test
+    void remotePlaintextWarns() {
+        assertThat(TopazChannels.implicitPlaintextWarning(settings("topaz.example.com", Optional.empty()),
+                Optional.empty()))
+                .hasValueSatisfying(text -> assertThat(text).contains("topaz.example.com:8282")
+                        .contains("quarkus.topaz.plain-text=true").contains("TLS"));
+    }
+
+    @Test
+    void explicitPlaintextIsSilent() {
+        assertThat(TopazChannels.implicitPlaintextWarning(settings("topaz.example.com", Optional.of(true)),
+                Optional.empty())).isEmpty();
+    }
+
+    @Test
+    void tlsResolvedIsSilent() {
+        assertThat(TopazChannels.implicitPlaintextWarning(settings("topaz.example.com", Optional.empty()),
+                Optional.of(withTrustStore()))).isEmpty();
+    }
+
+    @Test
+    void localPlaintextIsSilent() {
+        assertThat(TopazChannels.implicitPlaintextWarning(settings("localhost", Optional.empty()), Optional.empty()))
+                .isEmpty();
+    }
+
+    @Test
+    void warningOmitsApiKey() {
+        ResolvedServiceSettings s = new ResolvedServiceSettings("topaz.example.com", 8282, Optional.of("secret-key"),
+                Optional.empty(), Optional.empty(), Optional.empty());
+        assertThat(TopazChannels.implicitPlaintextWarning(s, Optional.empty()))
+                .hasValueSatisfying(text -> assertThat(text).doesNotContain("secret-key"));
+    }
+
     private static TlsConfiguration withTrustStore() {
         TlsConfiguration c = mock(TlsConfiguration.class);
         when(c.getTrustStoreOptions()).thenReturn(new KeyStoreOptions());

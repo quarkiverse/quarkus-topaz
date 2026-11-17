@@ -232,9 +232,11 @@ are not part of the derived template. For such resources, set `path` explicitly 
 configuration.
 
 A deny, an error or a timeout is a 403 with `ForbiddenException`. An anonymous caller gets a 401 unless
-`anonymous=evaluate`. The interceptor checks a method that returns `Uni` or `Multi` on subscription. Any other method
-waits for the decision, including one that returns `CompletionStage`. Such a method must run on a worker thread. On
-the event loop, it fails with `IllegalStateException`.
+`anonymous=evaluate`. The interceptor checks a method that returns `Uni` or `Multi` on subscription. A method whose
+declared return type is `CompletionStage` or `CompletableFuture` waits for the decision on a worker thread. On the
+event loop, it is checked without blocking, and its body runs on the caller's context once the check passes. A deny
+fails the returned future. Any other method waits for the decision and must run on a worker thread. On the event loop,
+it fails with `IllegalStateException`.
 
 == `@TopazCheck`
 
@@ -265,7 +267,7 @@ The extension converts the value with `toString()`.
 An anonymous caller always gets a 401, whatever `anonymous` says, because a relation check needs a subject. A failed
 check, a directory error or a timeout is a 403. A misconfiguration found at call time is a 403 too, with a WARN. These
 misconfigurations are a missing object id source, `@TopazObjectId` on two parameters, and a null or blank id. `Uni`,
-`Multi` and blocking methods dispatch as for `@TopazAuthorize`.
+`Multi`, `CompletionStage` and blocking methods dispatch as for `@TopazAuthorize`.
 
 Both interceptors run at priority `Interceptor.Priority.PLATFORM_BEFORE + 210`. They run after the Quarkus security
 interceptors, such as `@RolesAllowed` and `@Authenticated`.
@@ -289,10 +291,13 @@ public List<String> list() { ... }
 public void delete(@PathParam("id") String id) { ... }
 ----
 
-* A plain permission name, a `StringPermission`, is a policy path. The bridge evaluates it with the configured
-decision and an empty resource context. The bridge does not check policy paths against `policy-root`. It does not
-support actions. It denies a permission with actions, such as `@PermissionsAllowed("todoApp.GET.todos:write")`, and
-logs a WARN.
+* A plain permission name, a `StringPermission`, is a policy path when the bridge owns it. The bridge evaluates it
+with the configured decision and an empty resource context. It does not support actions. It denies an owned
+permission with actions, such as `@PermissionsAllowed("todoApp.GET.todos:write")`, and logs a WARN.
+* The bridge owns a name that equals `quarkus.topaz.enforcement.policy-root` or an entry of
+`quarkus.topaz.enforcement.permissions.prefixes`, or that starts with one of them followed by `.`. With the root
+`todoApp`, it owns `todoApp.GET.todos` but not `todoAppX.GET.todos`. For any other name it abstains: it does not call
+Topaz, and the other permission checkers decide. Quarkus denies a permission that no checker grants.
 * A `TopazRelation` is a directory check. Its name is `objectType#relation` or `objectType#relation@subjectType`. The
 subject type defaults to `user`. Its object id is its constructor parameter `id`, and Quarkus matches that parameter by
 name. The secured method needs a parameter named `id`. Otherwise `params` names the parameter that supplies the id,
@@ -306,7 +311,7 @@ subject type. Each part:
 * Ends with a letter or a digit.
 * Contains only letters, digits, `.`, `_` and `-` in between.
 
-The rule matches Topaz 0.33.22. Quarkus builds the permission when the secured method runs. Any other name fails at
+The rule matches Topaz 0.33.28. Quarkus builds the permission when the secured method runs. Any other name fails at
 that point, and Quarkus denies the call with 403.
 
 The bridge does not augment anonymous callers, so they get a 401. An error or a timeout denies.
@@ -314,6 +319,24 @@ The bridge does not augment anonymous callers, so they get a 401. An error or a 
 Quarkus grants a permission when any permission of the identity implies it. Another `SecurityIdentityAugmentor` or a
 role mapping may grant a `StringPermission` of the same name. That permission then bypasses Topaz for that name. Nothing
 bypasses Topaz for a `TopazRelation`. Its `implies` always returns `false`, so only the Topaz check grants it.
+
+With the bridge on, startup fails unless `policy-root` or `permissions.prefixes` is set, even when the application
+only uses `TopazRelation`. A blank entry in `permissions.prefixes`, or one that starts or ends with `.`, also fails startup. Add prefixes for policy names
+outside the root:
+
+[source,properties]
+----
+quarkus.topaz.enforcement.permissions.enabled=true
+quarkus.topaz.enforcement.policy-root=todoApp
+quarkus.topaz.enforcement.permissions.prefixes=billing,reports
+----
+
+=== Migrating from 0.2.x
+
+In 0.2.x the bridge evaluated every plain permission name as a policy path. From 0.3.0 it only evaluates names it
+owns. A name outside the policy root and the prefixes is no longer sent to Topaz. If no other checker grants it, the
+call now gets a 403, so add that name's prefix to `quarkus.topaz.enforcement.permissions.prefixes`. Nothing that was
+denied before is permitted now.
 
 == Customizing
 
@@ -444,6 +467,13 @@ key stands for the decision of one caller.
 The extension stores only successful decisions and never caches an error. The cache applies to the route policy,
 `@TopazAuthorize` and plain `@PermissionsAllowed` names, not to relation checks. The implementation decides any expiry
 and size bounds.
+
+A cached entry keeps its answer until the implementation expires it. The extension stores denials as well as
+allows, and a change in Topaz never evicts an entry. A cached allow therefore outlives a revoked relation or policy
+change, and a cached deny outlives a new grant. An in-memory cache is per process, so instances can disagree until
+their entries expire. A shared cache, such as Redis, agrees across instances but is just as stale. When revocations
+must take effect quickly, keep expiries short, in seconds rather than minutes, or install no cache. Relation checks
+(`@TopazCheck` and `TopazRelation`) are never cached, so they always see the current directory.
 
 == Configuration
 

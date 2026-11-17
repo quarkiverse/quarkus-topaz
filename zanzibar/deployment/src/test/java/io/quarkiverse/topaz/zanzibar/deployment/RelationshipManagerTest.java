@@ -138,7 +138,7 @@ public class RelationshipManagerTest {
 
     @Test
     void directoryCheckOnUnknownTypeIsFalse() {
-        // Topaz 0.33.22 answers OK with check=false (no gRPC error) for an unknown object type
+        // Topaz 0.33.28 answers OK with check=false (no gRPC error) for an unknown object type
         assertThat(await(directory.check("spaceship", "s-1", "owner", "user", "rick@the-citadel.com"))).isFalse();
     }
 
