@@ -6,8 +6,10 @@ import io.quarkiverse.topaz.AuthorizerClient;
 import io.quarkiverse.topaz.DirectoryClient;
 import io.quarkiverse.topaz.TopazClient;
 import io.quarkiverse.topaz.runtime.TopazRecorder;
+import io.quarkiverse.topaz.runtime.VertxGrpc;
 import io.quarkiverse.topaz.runtime.health.TopazHealthCheck;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
+import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -18,6 +20,7 @@ import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.smallrye.health.deployment.spi.HealthBuildItem;
 import io.quarkus.tls.deployment.spi.TlsRegistryBuildItem;
@@ -101,5 +104,18 @@ class TopazProcessor {
         if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
             health.produce(new HealthBuildItem(TopazHealthCheck.class.getName(), buildTimeConfig.health().enabled()));
         }
+    }
+
+    /**
+     * Register the Vert.x gRPC client classes the channel factory calls reflectively.
+     * <p>
+     * Quarkus 3 and Quarkus 4 ship different Vert.x gRPC client APIs, so only the present classes are registered.
+     *
+     * @return the reflective class item
+     */
+    @BuildStep
+    ReflectiveClassBuildItem vertxGrpcReflection() {
+        return ReflectiveClassBuildItem.builder(VertxGrpc.REFLECTIVE_CLASSES.stream()
+                .filter(QuarkusClassLoader::isClassPresentAtRuntime).toArray(String[]::new)).methods().build();
     }
 }

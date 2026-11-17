@@ -18,7 +18,7 @@ import io.quarkiverse.topaz.security.IdentityMapper;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.smallrye.common.vertx.VertxContext;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.Context;
@@ -34,7 +34,7 @@ public class RoutePolicyMapperContextTest {
     static final AtomicReference<String> THREAD = new AtomicReference<>();
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(TodoTestResource.class, TestIdentities.class, TestIdentityProvider.class,
                             TestIdentityController.class, ContextIdentityMapper.class)

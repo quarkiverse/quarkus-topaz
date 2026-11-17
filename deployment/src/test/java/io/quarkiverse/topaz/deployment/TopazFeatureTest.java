@@ -5,12 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class TopazFeatureTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar.addClasses())
             .overrideConfigKey("quarkus.topaz.devservices.enabled", "false")
             .setLogRecordPredicate(r -> r.getMessage().contains("Installed features"))

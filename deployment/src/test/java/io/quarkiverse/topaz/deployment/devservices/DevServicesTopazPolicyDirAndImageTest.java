@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.runtime.configuration.ConfigurationException;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class DevServicesTopazPolicyDirAndImageTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar.addAsResource("topaz"))
             .overrideConfigKey("quarkus.topaz.devservices.policy.directory", "classpath:topaz/policies")
             .overrideConfigKey("quarkus.topaz.devservices.policy.image", "example.invalid/policy:1")

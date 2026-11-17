@@ -41,6 +41,13 @@ Add the runtime artifact. Quarkus resolves the deployment artifact.
 </dependency>
 ----
 
+=== Compatibility
+
+The extension supports Quarkus 3.40 and Quarkus 4. One build serves both: at startup it picks the Vert.x gRPC
+client API (Vert.x 4 or 5) and the Jackson `ObjectMapper` (Jackson 2 or 3) that the running Quarkus ships. CI tests
+every change against Quarkus 3.40 and against the Quarkus main branch. Older Quarkus lines, such as the 3.33 and 3.27
+LTS releases, are not supported.
+
 == Quick start
 
 This is the todo application from the `integration-tests` module of this repository, cut down to one endpoint. Put

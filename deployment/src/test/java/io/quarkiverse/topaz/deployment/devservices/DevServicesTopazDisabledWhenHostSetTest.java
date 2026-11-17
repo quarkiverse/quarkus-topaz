@@ -13,12 +13,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.quarkiverse.topaz.TopazClient;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class DevServicesTopazDisabledWhenHostSetTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .overrideConfigKey("quarkus.topaz.authorizer.host", "example.invalid")
             .overrideConfigKey("quarkus.topaz.plain-text", "true")
             .overrideConfigKey("quarkus.topaz.deadline", "1s");

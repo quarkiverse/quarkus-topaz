@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.empty;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.restassured.RestAssured;
 
 public class TopazHealthDisabledTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .overrideConfigKey("quarkus.topaz.devservices.enabled", "false")
             .overrideConfigKey("quarkus.topaz.health.enabled", "false");
 

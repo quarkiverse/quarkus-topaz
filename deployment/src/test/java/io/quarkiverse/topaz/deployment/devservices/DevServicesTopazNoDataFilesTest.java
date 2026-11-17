@@ -6,13 +6,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.runtime.configuration.ConfigurationException;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class DevServicesTopazNoDataFilesTest {
 
     // A data-location with neither objects.json nor relations.json is a misconfiguration and fails the build.
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar.addAsResource("topaz-nodata"))
             .overrideConfigKey("quarkus.topaz.devservices.data-location", "classpath:topaz-nodata/data")
             .assertException(t -> {

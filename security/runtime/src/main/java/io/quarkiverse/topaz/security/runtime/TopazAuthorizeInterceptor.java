@@ -13,7 +13,6 @@ import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Struct;
 
 import aserto.authorizer.v2.api.IdentityContext;
@@ -45,7 +44,8 @@ public class TopazAuthorizeInterceptor {
     private final PolicyPathMapper policyPathMapper;
     private final ResourceContextMapper resourceContextMapper;
     private final ResourceMethodInfoResolver resolver;
-    private final ObjectMapper objectMapper;
+    // found on the first @TopazResource argument, so methods without one never need a mapper
+    private volatile JacksonConverter jackson;
     private final MapperDispatch dispatch;
 
     /**
@@ -58,14 +58,13 @@ public class TopazAuthorizeInterceptor {
      * @param policyPathMapper the policy path mapper
      * @param resourceContextMapper the resource context mapper
      * @param resolver the resource method resolver
-     * @param objectMapper the Jackson mapper that converts {@link TopazResource} arguments
      * @param dispatch the mapper dispatcher
      */
     @Inject
     TopazAuthorizeInterceptor(InterceptorSupport support, DecisionEvaluator evaluator, TopazEnforcementConfig config,
             IdentityMapper identityMapper, PolicyPathMapper policyPathMapper,
             ResourceContextMapper resourceContextMapper, ResourceMethodInfoResolver resolver,
-            ObjectMapper objectMapper, MapperDispatch dispatch) {
+            MapperDispatch dispatch) {
         this.support = support;
         this.evaluator = evaluator;
         this.config = config;
@@ -73,7 +72,6 @@ public class TopazAuthorizeInterceptor {
         this.policyPathMapper = policyPathMapper;
         this.resourceContextMapper = resourceContextMapper;
         this.resolver = resolver;
-        this.objectMapper = objectMapper;
         this.dispatch = dispatch;
     }
 
@@ -163,9 +161,18 @@ public class TopazAuthorizeInterceptor {
         for (int i = 0; i < parameters.length; i++) {
             TopazResource key = parameters[i].getAnnotation(TopazResource.class);
             if (key != null) {
-                builder.putFields(key.value(), Structs.value(objectMapper.convertValue(args[i], Object.class)));
+                builder.putFields(key.value(), Structs.value(jackson().toPlain(args[i])));
             }
         }
         return builder.build();
+    }
+
+    private JacksonConverter jackson() {
+        JacksonConverter j = jackson;
+        if (j == null) {
+            j = JacksonConverter.fromContainer();
+            jackson = j;
+        }
+        return j;
     }
 }

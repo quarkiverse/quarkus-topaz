@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkiverse.topaz.security.DecisionCache;
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * A permitted request continues on the event loop, with the context locals set by an earlier route filter, even when a
@@ -22,7 +22,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class RoutePolicyEventLoopResumeTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(ResumeRoutes.class, AlwaysTrueCache.class, TestIdentities.class,
                             TestIdentityProvider.class, TestIdentityController.class)

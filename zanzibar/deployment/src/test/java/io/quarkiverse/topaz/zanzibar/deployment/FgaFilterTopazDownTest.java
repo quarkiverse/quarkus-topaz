@@ -18,7 +18,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * Topaz accepts connections and never answers. The client-wide deadline (1s) is shorter than the quarkus-zanzibar filter
@@ -30,7 +30,7 @@ public class FgaFilterTopazDownTest {
     private static final ServerSocket SILENT = silentListener();
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(FgaTodoResource.class, TestIdentities.class, TestIdentityProvider.class,
                             TestIdentityController.class))

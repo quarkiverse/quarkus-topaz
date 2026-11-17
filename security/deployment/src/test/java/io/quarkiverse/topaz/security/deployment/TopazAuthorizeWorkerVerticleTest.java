@@ -20,7 +20,7 @@ import io.quarkus.runtime.StartupEvent;
 import io.quarkus.security.identity.CurrentIdentityAssociation;
 import io.quarkus.security.runtime.QuarkusPrincipal;
 import io.quarkus.security.runtime.QuarkusSecurityIdentity;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.ThreadingModel;
@@ -31,7 +31,7 @@ public class TopazAuthorizeWorkerVerticleTest {
     static final String ADDRESS = "topaz-authorize-worker";
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(AuthorizeBoundService.class, WorkerDeployer.class, AuthorizeVerticle.class,
                             AlwaysTrueCache.class)

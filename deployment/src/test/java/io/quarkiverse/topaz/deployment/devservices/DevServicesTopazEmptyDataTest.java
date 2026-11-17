@@ -12,12 +12,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.quarkiverse.topaz.TopazClient;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class DevServicesTopazEmptyDataTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             // both seed files exist and declare no entries
             .withApplicationRoot(jar -> jar.addAsResource("topaz").addAsResource("topaz-empty"))
             .overrideConfigKey("quarkus.topaz.devservices.manifest-location", "classpath:topaz/manifest.yaml")

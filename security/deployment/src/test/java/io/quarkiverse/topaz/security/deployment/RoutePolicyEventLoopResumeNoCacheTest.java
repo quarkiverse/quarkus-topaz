@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * Without a cache a permitted request also continues on the event loop, with the filter's context local.
@@ -16,7 +16,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class RoutePolicyEventLoopResumeNoCacheTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(ResumeRoutes.class, TestIdentities.class, TestIdentityProvider.class,
                             TestIdentityController.class)

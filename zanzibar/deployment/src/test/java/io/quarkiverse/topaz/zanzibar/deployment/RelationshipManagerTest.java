@@ -18,13 +18,13 @@ import io.quarkiverse.topaz.zanzibar.ZanzibarTopazRelationshipManager;
 import io.quarkiverse.zanzibar.Relationship;
 import io.quarkiverse.zanzibar.RelationshipManager;
 import io.quarkus.arc.ClientProxy;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.smallrye.mutiny.Uni;
 
 public class RelationshipManagerTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar.addAsResource("topaz", "topaz"))
             .overrideConfigKey("quarkus.topaz.devservices.policy.directory", "classpath:topaz/policies")
             .overrideConfigKey("quarkus.topaz.devservices.manifest-location", "classpath:topaz/manifest.yaml")

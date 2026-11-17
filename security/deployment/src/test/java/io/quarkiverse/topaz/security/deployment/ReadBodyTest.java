@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * With {@code read-body} the mapper sees the request body; the policy allows only {@code input.resource.body == "yes"}.
@@ -17,7 +17,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class ReadBodyTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(BodyResource.class, BodyContextMapper.class, TestIdentities.class,
                             TestIdentityProvider.class, TestIdentityController.class)

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * {@code @AuthorizationPolicy(name = "topaz")} on a resource class, with no HTTP permission configured.
@@ -16,7 +16,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class AuthorizationPolicyAnnotationTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(AnnotatedTodoResource.class, TestIdentities.class, TestIdentityProvider.class,
                             TestIdentityController.class)

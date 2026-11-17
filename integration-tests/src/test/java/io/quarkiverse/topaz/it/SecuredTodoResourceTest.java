@@ -1,6 +1,7 @@
 package io.quarkiverse.topaz.it;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
@@ -60,6 +61,18 @@ public class SecuredTodoResourceTest {
     @Test
     void annotatedCheckNonOwner() {
         morty().when().delete("/annotated/todos/todo-1").then().statusCode(403);
+    }
+
+    @Test
+    void annotatedResourceRecordOwner() {
+        rick().contentType("application/json").body("{\"id\":\"todo-1\",\"note\":\"x\"}")
+                .when().post("/annotated/todos/delete-ref").then().statusCode(200).body("deleted", equalTo("todo-1"));
+    }
+
+    @Test
+    void annotatedResourceRecordNonOwner() {
+        morty().contentType("application/json").body("{\"id\":\"todo-1\",\"note\":\"x\"}")
+                .when().post("/annotated/todos/delete-ref").then().statusCode(403);
     }
 
     @Test

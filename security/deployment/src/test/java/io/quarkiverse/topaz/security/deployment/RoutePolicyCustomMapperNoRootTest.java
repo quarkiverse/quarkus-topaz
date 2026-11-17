@@ -14,7 +14,7 @@ import io.quarkiverse.topaz.security.PolicyPathMapper;
 import io.quarkiverse.topaz.security.ResourceMethodInfo;
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -23,7 +23,7 @@ import io.vertx.ext.web.RoutingContext;
 public class RoutePolicyCustomMapperNoRootTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(TodoTestResource.class, TestIdentities.class, TestIdentityProvider.class,
                             TestIdentityController.class, FixedPolicyPathMapper.class)

@@ -25,6 +25,7 @@ import io.quarkiverse.topaz.security.runtime.DefaultPolicyPathMapper;
 import io.quarkiverse.topaz.security.runtime.DefaultResourceContextMapper;
 import io.quarkiverse.topaz.security.runtime.DefaultSubjectMapper;
 import io.quarkiverse.topaz.security.runtime.InterceptorSupport;
+import io.quarkiverse.topaz.security.runtime.JacksonConverter;
 import io.quarkiverse.topaz.security.runtime.NoopDecisionCache;
 import io.quarkiverse.topaz.security.runtime.NoopResourceMethodInfoResolver;
 import io.quarkiverse.topaz.security.runtime.TopazAuthorizeInterceptor;
@@ -36,6 +37,7 @@ import io.quarkiverse.topaz.security.runtime.TopazSecurityRecorder;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.ExcludedTypeBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
+import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -274,6 +276,26 @@ class TopazSecurityProcessor {
      */
     private static boolean isJdkType(String name) {
         return name.startsWith("java.") || name.startsWith("javax.") || name.startsWith("jdk.");
+    }
+
+    /**
+     * Keep the application's Jackson {@code ObjectMapper} bean and register it for native.
+     * <p>
+     * {@code @TopazResource} arguments are converted with it, but it is looked up by class name, because Quarkus 3 and
+     * Quarkus 4 ship different Jackson versions. Only the present mapper classes are handled.
+     *
+     * @param unremovable the producer of unremovable beans
+     * @param reflective the producer of reflective classes
+     */
+    @BuildStep
+    void jacksonMapper(BuildProducer<UnremovableBeanBuildItem> unremovable,
+            BuildProducer<ReflectiveClassBuildItem> reflective) {
+        for (String mapper : JacksonConverter.MAPPERS) {
+            if (QuarkusClassLoader.isClassPresentAtRuntime(mapper)) {
+                unremovable.produce(UnremovableBeanBuildItem.beanTypes(DotName.createSimple(mapper)));
+                reflective.produce(ReflectiveClassBuildItem.builder(mapper).methods().build());
+            }
+        }
     }
 
     /**

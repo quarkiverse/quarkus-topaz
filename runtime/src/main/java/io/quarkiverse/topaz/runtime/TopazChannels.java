@@ -17,8 +17,6 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpVersion;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.grpc.client.GrpcClient;
-import io.vertx.grpc.client.GrpcClientChannel;
-import io.vertx.grpc.client.GrpcClientOptions;
 
 /**
  * Factory of Vert.x gRPC channels for Topaz services.
@@ -50,8 +48,9 @@ public final class TopazChannels {
     public static ManagedChannelHolder create(Vertx vertx, ResolvedServiceSettings s, Optional<TlsConfiguration> tls,
             List<ClientInterceptor> interceptors) {
         HttpClientOptions http = transportOptions(s, tls);
-        GrpcClient client = GrpcClient.client(vertx, new GrpcClientOptions().setTransportOptions(http));
-        Channel channel = new GrpcClientChannel(client, SocketAddress.inetSocketAddress(s.port(), s.host()));
+        VertxGrpc api = VertxGrpc.get();
+        GrpcClient client = api.client(vertx, http);
+        Channel channel = api.channel(client, SocketAddress.inetSocketAddress(s.port(), s.host()));
         if (!interceptors.isEmpty()) {
             channel = ClientInterceptors.intercept(channel, interceptors);
         }

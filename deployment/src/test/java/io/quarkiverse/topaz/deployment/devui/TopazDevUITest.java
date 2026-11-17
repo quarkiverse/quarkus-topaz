@@ -6,8 +6,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import io.quarkus.devui.tests.DevUIJsonRPCTest;
 import io.quarkus.test.QuarkusDevModeTest;
 
@@ -29,10 +27,10 @@ public class TopazDevUITest extends DevUIJsonRPCTest {
 
     @Test
     void listPoliciesReturnsTodoPackages() throws Exception {
-        JsonNode policies = executeJsonRPCMethod("listPolicies");
+        var policies = executeJsonRPCMethod("listPolicies");
         assertThat(policies.isArray()).isTrue();
         boolean found = false;
-        for (JsonNode p : policies) {
+        for (var p : policies) {
             found |= p.get("packagePath").asText().matches("(data\\.)?todoApp\\..*");
         }
         assertThat(found).as("policies: %s", policies).isTrue();
@@ -45,7 +43,7 @@ public class TopazDevUITest extends DevUIJsonRPCTest {
 
     @Test
     void connectionDescribesEndpoints() throws Exception {
-        JsonNode c = executeJsonRPCMethod("connection");
+        var c = executeJsonRPCMethod("connection");
         // the app's own view of the Dev Service endpoints (injected quarkus.topaz.authorizer/directory host and port)
         // is what the health check reports; the Dev UI must describe the same host:port pairs
         io.restassured.path.json.JsonPath ready = io.restassured.RestAssured.get("/q/health/ready").jsonPath();

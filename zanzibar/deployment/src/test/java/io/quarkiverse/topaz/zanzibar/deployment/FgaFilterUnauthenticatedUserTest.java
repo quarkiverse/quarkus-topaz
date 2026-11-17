@@ -5,12 +5,12 @@ import static io.restassured.RestAssured.given;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class FgaFilterUnauthenticatedUserTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar.addClasses(FgaPublicResource.class).addAsResource("topaz", "topaz"))
             .overrideConfigKey("quarkus.zanzibar.filter.unauthenticated-user", "rick@the-citadel.com")
             .overrideConfigKey("quarkus.zanzibar.extract-user-type-from-roles", "false")

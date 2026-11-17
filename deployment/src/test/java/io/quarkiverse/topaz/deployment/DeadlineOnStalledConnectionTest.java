@@ -16,7 +16,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.quarkiverse.topaz.TopazClient;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.smallrye.mutiny.Uni;
 
 /**
@@ -27,7 +27,7 @@ public class DeadlineOnStalledConnectionTest {
     private static final ServerSocket SILENT = SilentListener.open();
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar.addClass(SilentListener.class))
             .overrideConfigKey("quarkus.topaz.devservices.enabled", "false")
             .overrideConfigKey("quarkus.topaz.authorizer.host", "127.0.0.1")

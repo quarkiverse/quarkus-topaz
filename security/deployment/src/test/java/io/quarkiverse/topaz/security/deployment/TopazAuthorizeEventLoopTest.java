@@ -11,7 +11,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * A blocking {@code @TopazAuthorize} method called on the event loop is refused rather than blocking it.
@@ -21,7 +21,7 @@ public class TopazAuthorizeEventLoopTest {
     private static final String EVENT_LOOP_TEXT = "@TopazAuthorize/@TopazCheck on a blocking method cannot run on the event";
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(EventLoopRoutes.class, SecuredService.class, TestIdentities.class,
                             TestIdentityProvider.class, TestIdentityController.class)

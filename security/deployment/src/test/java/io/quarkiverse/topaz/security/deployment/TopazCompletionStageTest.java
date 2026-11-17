@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.restassured.RestAssured;
 import io.restassured.config.HttpClientConfig;
 
@@ -20,7 +20,7 @@ import io.restassured.config.HttpClientConfig;
 public class TopazCompletionStageTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(ServiceResource.class, SecuredService.class, TestIdentities.class,
                             TestIdentityProvider.class, TestIdentityController.class)

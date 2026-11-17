@@ -9,13 +9,13 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 // No HTTP policy: only the @TopazCheck interceptor enforces. rick owns todo-1, morty does not, summer is unknown.
 public class TopazCheckTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(TodoTestResource.class, ServiceResource.class, SecuredService.class,
                             ClassBoundResource.class, AuthorizeBoundService.class, CheckBoundService.class,

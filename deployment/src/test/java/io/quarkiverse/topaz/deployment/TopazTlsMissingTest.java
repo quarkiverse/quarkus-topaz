@@ -5,12 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class TopazTlsMissingTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .overrideConfigKey("quarkus.topaz.tls-configuration-name", "nope")
             .overrideConfigKey("quarkus.topaz.devservices.enabled", "false")
             .assertException(t -> {

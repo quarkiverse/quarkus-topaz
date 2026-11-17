@@ -16,12 +16,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.quarkiverse.topaz.TopazClient;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class DevServicesTopazTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             // classpath: locations resolve against the application, like src/main/resources in an app
             .withApplicationRoot(jar -> jar.addAsResource("topaz"))
             .overrideConfigKey("quarkus.topaz.devservices.policy.directory", "classpath:topaz/policies")

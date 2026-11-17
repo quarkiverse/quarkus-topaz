@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * With {@code applies-to=jaxrs} the policy runs after REST matching, so the policy path uses the template and the
@@ -17,7 +17,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class RoutePolicyJaxrsTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(TodoTestResource.class, TestIdentities.class, TestIdentityProvider.class,
                             TestIdentityController.class)
