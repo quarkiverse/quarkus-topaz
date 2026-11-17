@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * {@code anonymous=evaluate} lets an anonymous caller reach the authorizer, but {@code @TopazCheck} needs a subject
@@ -17,7 +17,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class TopazCheckAnonymousEvaluateTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(ServiceResource.class, SecuredService.class, TestIdentities.class,
                             TestIdentityProvider.class, TestIdentityController.class)

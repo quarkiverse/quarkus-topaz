@@ -18,7 +18,7 @@ import io.grpc.ClientInterceptor;
 import io.grpc.MethodDescriptor;
 import io.quarkiverse.topaz.TopazClient;
 import io.quarkus.grpc.GlobalInterceptor;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * Global gRPC client interceptors (the hook used by quarkus-opentelemetry and Micrometer) must apply to the Topaz
@@ -27,7 +27,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class GlobalInterceptorTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar.addAsResource("topaz").addClass(RecordingInterceptor.class))
             .overrideConfigKey("quarkus.topaz.devservices.policy.directory", "classpath:topaz/policies")
             .overrideConfigKey("quarkus.topaz.devservices.manifest-location", "classpath:topaz/manifest.yaml")

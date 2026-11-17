@@ -9,13 +9,13 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.runtime.configuration.ConfigurationException;
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /** A prefix that starts or ends with a dot would own nothing, so it fails startup. */
 public class PermissionsAllowedDotPrefixTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(PermissionsResource.class, TestIdentities.class, TestIdentityProvider.class,
                             TestIdentityController.class))

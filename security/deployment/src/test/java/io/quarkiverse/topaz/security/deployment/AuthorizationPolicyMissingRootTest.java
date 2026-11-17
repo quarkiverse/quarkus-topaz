@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.runtime.configuration.ConfigurationException;
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * {@code @AuthorizationPolicy(name = "topaz")} without any HTTP permission config still needs the policy root.
@@ -17,7 +17,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class AuthorizationPolicyMissingRootTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(AnnotatedTodoResource.class, TestIdentities.class, TestIdentityProvider.class,
                             TestIdentityController.class)

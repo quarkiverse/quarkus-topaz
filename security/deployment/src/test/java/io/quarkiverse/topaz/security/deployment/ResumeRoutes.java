@@ -17,14 +17,16 @@ public class ResumeRoutes {
     // runs before the HTTP permission checks, on the request's duplicated context
     @RouteFilter(Integer.MAX_VALUE)
     void mark(RoutingContext rc) {
-        Vertx.currentContext().putLocal(KEY, "set");
+        // the request's context itself, compared by identity below (Vert.x 5 dropped string-keyed context locals)
+        rc.put(KEY, Vertx.currentContext());
         rc.next();
     }
 
     // non-blocking: reports where the request continues once the policy has permitted it
     @Route(path = "/resume/where", methods = Route.HttpMethod.GET)
-    Uni<String> where() {
+    Uni<String> where(RoutingContext rc) {
         Context context = Vertx.currentContext();
-        return Uni.createFrom().item(Context.isOnEventLoopThread() + "|" + (context == null ? null : context.getLocal(KEY)));
+        return Uni.createFrom().item(Context.isOnEventLoopThread() + "|"
+                + (context != null && context == rc.get(KEY) ? "set" : null));
     }
 }

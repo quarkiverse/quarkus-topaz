@@ -15,12 +15,12 @@ import io.grpc.StatusRuntimeException;
 import io.quarkiverse.topaz.AuthorizerClient;
 import io.quarkiverse.topaz.DirectoryClient;
 import io.quarkiverse.topaz.TopazClient;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class TopazBeansTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .overrideConfigKey("quarkus.topaz.authorizer.port", "1")
             .overrideConfigKey("quarkus.topaz.directory.port", "1")
             .overrideConfigKey("quarkus.topaz.plain-text", "true")

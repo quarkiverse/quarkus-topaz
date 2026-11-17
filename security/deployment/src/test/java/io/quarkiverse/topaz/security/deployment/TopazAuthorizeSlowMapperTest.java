@@ -24,7 +24,7 @@ import io.quarkiverse.topaz.security.IdentityMapper;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
 import io.vertx.ext.web.RoutingContext;
@@ -32,7 +32,7 @@ import io.vertx.ext.web.RoutingContext;
 public class TopazAuthorizeSlowMapperTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(ServiceResource.class, SecuredService.class, TestIdentities.class,
                             TestIdentityProvider.class, TestIdentityController.class, SlowIdentityMapper.class,

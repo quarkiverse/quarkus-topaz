@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.quarkiverse.topaz.TopazClient;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * Nothing listens on the configured port and no deadline is set: the call fails fast with UNAVAILABLE.
@@ -27,7 +27,7 @@ public class RefusedConnectionTest {
     private static final int CLOSED_PORT = closedPort();
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .overrideConfigKey("quarkus.topaz.devservices.enabled", "false")
             .overrideConfigKey("quarkus.topaz.authorizer.host", "127.0.0.1")
             .overrideConfigKey("quarkus.topaz.directory.host", "127.0.0.1")

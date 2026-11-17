@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * Without {@code applies-to=jaxrs} the policy runs before REST matching: no template is known, the raw path is mapped
@@ -23,7 +23,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class RoutePolicyBeforeMatchingTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(TodoTestResource.class, TestIdentities.class, TestIdentityProvider.class,
                             TestIdentityController.class)

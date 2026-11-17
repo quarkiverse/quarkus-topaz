@@ -17,13 +17,13 @@ import io.quarkiverse.topaz.security.SubjectMapper;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.smallrye.mutiny.Uni;
 
 public class TopazCheckSlowMapperTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(ServiceResource.class, SecuredService.class, TestIdentities.class,
                             TestIdentityProvider.class, TestIdentityController.class, SlowSubjectMapper.class)

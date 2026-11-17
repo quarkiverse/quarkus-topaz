@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkiverse.topaz.security.TopazAuthorize;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * A derived path means the policy of the HTTP request being served, so a plain method of a resource class may not
@@ -19,7 +19,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class TopazAuthorizeNonEndpointBuildTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar.addClasses(ResourceWithHelper.class))
             .overrideConfigKey("quarkus.topaz.devservices.enabled", "false")
             .overrideConfigKey("quarkus.topaz.enforcement.policy-root", "todoApp")

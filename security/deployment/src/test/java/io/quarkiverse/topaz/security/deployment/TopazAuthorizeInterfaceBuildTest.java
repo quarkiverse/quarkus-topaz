@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkiverse.topaz.security.TopazAuthorize;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * With the {@code @Path} on an interface, the implementing class is a resource; the build error for its helper
@@ -19,7 +19,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class TopazAuthorizeInterfaceBuildTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar.addClasses(XApi.class, XImpl.class))
             .overrideConfigKey("quarkus.topaz.devservices.enabled", "false")
             .overrideConfigKey("quarkus.topaz.enforcement.policy-root", "todoApp")

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /**
  * With Topaz unreachable, permissions outside the policy root are never sent to Topaz: no timeout, no WARN, and the
@@ -25,7 +25,7 @@ public class PermissionsAllowedAbstainTest {
     private static final ServerSocket SILENT = SilentListener.open();
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(PermissionsResource.class, GrantingAugmentor.class, TestIdentities.class,
                             TestIdentityProvider.class, TestIdentityController.class, SilentListener.class))

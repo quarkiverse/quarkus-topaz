@@ -12,14 +12,14 @@ import io.quarkus.arc.Arc;
 import io.quarkus.security.identity.SecurityIdentityAugmentor;
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class PermissionsAllowedBridgeTest {
 
     static final String AUGMENTOR = "io.quarkiverse.topaz.security.runtime.TopazPermissionAugmentor";
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(PermissionsResource.class, TestIdentities.class, TestIdentityProvider.class,
                             TestIdentityController.class)

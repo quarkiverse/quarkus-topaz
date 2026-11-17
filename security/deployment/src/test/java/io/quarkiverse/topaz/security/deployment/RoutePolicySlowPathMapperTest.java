@@ -20,7 +20,7 @@ import io.quarkiverse.topaz.security.ResourceMethodInfo;
 import io.quarkiverse.topaz.security.runtime.DecisionEvaluator;
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -31,7 +31,7 @@ public class RoutePolicySlowPathMapperTest {
     static final CountDownLatch RELEASE = new CountDownLatch(1);
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(TodoTestResource.class, TestIdentities.class, TestIdentityProvider.class,
                             TestIdentityController.class, SlowPolicyPathMapper.class)

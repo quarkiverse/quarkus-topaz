@@ -6,13 +6,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.runtime.configuration.ConfigurationException;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class DevServicesTopazMissingManifestTest {
 
     // A failing build step is rethrown, not logged, so the message is asserted on the exception chain.
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .overrideConfigKey("quarkus.topaz.devservices.manifest-location", "classpath:nope.yaml")
             .assertException(t -> {
                 Throwable c = t;

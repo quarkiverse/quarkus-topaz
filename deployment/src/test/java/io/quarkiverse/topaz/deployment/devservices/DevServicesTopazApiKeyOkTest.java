@@ -9,13 +9,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkiverse.topaz.TopazClient;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class DevServicesTopazApiKeyOkTest {
 
     // The manifest is seeded through the key too, so reading it back proves both the seeder and the app use it.
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             // classpath: locations resolve against the application, like src/main/resources in an app
             .withApplicationRoot(jar -> jar.addAsResource("topaz"))
             .overrideConfigKey("quarkus.topaz.devservices.api-key", "secret")

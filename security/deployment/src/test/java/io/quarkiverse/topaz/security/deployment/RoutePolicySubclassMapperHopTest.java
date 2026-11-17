@@ -19,7 +19,7 @@ import io.quarkiverse.topaz.security.runtime.DefaultResourceContextMapper;
 import io.quarkiverse.topaz.security.runtime.DefaultSubjectMapper;
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.smallrye.mutiny.Uni;
 import io.vertx.ext.web.RoutingContext;
 
@@ -28,7 +28,7 @@ public class RoutePolicySubclassMapperHopTest {
     static final AtomicReference<String> THREAD = new AtomicReference<>();
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(TodoTestResource.class, TestIdentities.class, TestIdentityProvider.class,
                             TestIdentityController.class, SubclassMapper.class)

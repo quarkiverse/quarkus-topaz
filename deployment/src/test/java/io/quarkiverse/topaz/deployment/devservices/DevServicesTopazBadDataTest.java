@@ -6,13 +6,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.runtime.configuration.ConfigurationException;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class DevServicesTopazBadDataTest {
 
     // Seed data is parsed strictly at build time: a misspelled field fails the build, not silently dropped.
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar.addAsResource("topaz-bad"))
             .overrideConfigKey("quarkus.topaz.devservices.data-location", "classpath:topaz-bad/data")
             .assertException(t -> {

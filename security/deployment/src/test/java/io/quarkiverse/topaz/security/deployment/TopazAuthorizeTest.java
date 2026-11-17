@@ -10,13 +10,13 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.security.test.utils.TestIdentityController;
 import io.quarkus.security.test.utils.TestIdentityProvider;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 // No HTTP policy: only the @TopazAuthorize interceptor enforces.
 public class TopazAuthorizeTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .withApplicationRoot(jar -> jar
                     .addClasses(TodoTestResource.class, ServiceResource.class, SecuredService.class,
                             ClassBoundResource.class, AuthorizeBoundService.class, CheckBoundService.class,

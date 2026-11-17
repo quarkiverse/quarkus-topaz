@@ -10,13 +10,13 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.grpc.StatusRuntimeException;
 import io.quarkiverse.topaz.TopazClient;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 /** {@code plain-text=false} with no TLS configuration starts (TLS with JVM default trust) instead of failing. */
 public class TopazTlsJvmDefaultTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest TEST = new QuarkusUnitTest()
+    static final QuarkusExtensionTest TEST = new QuarkusExtensionTest()
             .overrideConfigKey("quarkus.topaz.plain-text", "false")
             .overrideConfigKey("quarkus.topaz.authorizer.port", "1")
             .overrideConfigKey("quarkus.topaz.directory.port", "1")

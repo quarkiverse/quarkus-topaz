@@ -4,20 +4,20 @@ This page describes how the tests of this repository run.
 
 == Layout
 
-`deployment`:: `QuarkusUnitTest` classes against the Dev Service. They cover the beans, the global interceptors and
+`deployment`:: `QuarkusExtensionTest` classes against the Dev Service. They cover the beans, the global interceptors and
 the health check when up, down and disabled. They also cover a TLS misconfiguration and the API key check. They also
 test the seeding of the Dev Service, its failure modes and the Dev UI JSON-RPC service.
 
 `runtime`:: Plain unit tests of the client against in-process gRPC servers.
 
-`security/deployment`:: `QuarkusUnitTest` classes for `quarkus-topaz-security` against the Dev Service. They cover
+`security/deployment`:: `QuarkusExtensionTest` classes for `quarkus-topaz-security` against the Dev Service. They cover
 the route policy in both modes, `@TopazAuthorize`, `@TopazCheck` and the `@PermissionsAllowed` bridge. They also
 cover the startup validation and the denials when Topaz is down.
 
 `security/no-rest-tests`:: An application without `quarkus-rest`. It builds, and the `topaz` route policy enforces
 on a reactive route.
 
-`zanzibar/deployment`:: `QuarkusUnitTest` classes for `quarkus-topaz-zanzibar` against the Dev Service. They cover the
+`zanzibar/deployment`:: `QuarkusExtensionTest` classes for `quarkus-topaz-zanzibar` against the Dev Service. They cover the
 relationship manager, the quarkus-zanzibar filter and its behaviour when Topaz is down.
 
 `integration-tests`:: The todo application. Its endpoints include some that the route policy and the interceptors

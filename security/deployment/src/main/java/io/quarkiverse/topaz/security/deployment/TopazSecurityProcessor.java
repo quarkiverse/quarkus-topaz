@@ -1,5 +1,9 @@
 package io.quarkiverse.topaz.security.deployment;
 
+import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
+
+import io.quarkiverse.topaz.security.runtime.JacksonConverter;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -274,6 +278,26 @@ class TopazSecurityProcessor {
      */
     private static boolean isJdkType(String name) {
         return name.startsWith("java.") || name.startsWith("javax.") || name.startsWith("jdk.");
+    }
+
+    /**
+     * Keep the application's Jackson {@code ObjectMapper} bean and register it for native.
+     * <p>
+     * {@code @TopazResource} arguments are converted with it, but it is looked up by class name, because Quarkus 3 and
+     * Quarkus 4 ship different Jackson versions. Only the present mapper classes are handled.
+     *
+     * @param unremovable the producer of unremovable beans
+     * @param reflective the producer of reflective classes
+     */
+    @BuildStep
+    void jacksonMapper(BuildProducer<UnremovableBeanBuildItem> unremovable,
+            BuildProducer<ReflectiveClassBuildItem> reflective) {
+        for (String mapper : JacksonConverter.MAPPERS) {
+            if (QuarkusClassLoader.isClassPresentAtRuntime(mapper)) {
+                unremovable.produce(UnremovableBeanBuildItem.beanTypes(DotName.createSimple(mapper)));
+                reflective.produce(ReflectiveClassBuildItem.builder(mapper).methods().build());
+            }
+        }
     }
 
     /**
